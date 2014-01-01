@@ -12,13 +12,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import cz.kotu.grids.GenericGrid;
+import cz.kotu.grids.LinPos;
+import cz.kotu.grids.LinearGrid;
 
 
 public class HelloApp extends ApplicationAdapter {
-    /**
-     * pixel per meter
-     */
-    final float PPM = 50f;
+
     SpriteBatch batch;
     Texture img;
     final Array<TextureRegion> blockTextureRegion = new Array<TextureRegion>(16);
@@ -27,11 +27,14 @@ public class HelloApp extends ApplicationAdapter {
 
     Tile tile = new Tile();
 
+    GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
+
     @Override
     public void create() {
 
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 640, 480);
+        camera.setToOrtho(false, 16, 12);
+        camera.translate(-2, -2);
 
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
@@ -50,6 +53,11 @@ public class HelloApp extends ApplicationAdapter {
 //		}
 //		Bullet.init();
 
+        // populate grid
+        for (LinPos p : grid.getLinGrid()) {
+            grid.set(p.i, new Square());
+        }
+
         tile.init();
 
     }
@@ -61,17 +69,28 @@ public class HelloApp extends ApplicationAdapter {
 
         tile.update();
 
+        camera.update();
+
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
+
         batch.draw(img, 0, 0);
-        batch.draw(blockTextureRegion.get(0), 100, 100);
-        batch.draw(blockTextureRegion.get(1), 200, 100);
-        batch.draw(blockTextureRegion.get(2), 150, 150);
 
+        for (LinPos p : grid.getLinGrid()) {
+            final Square square = grid.get(p.i);
+            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 1, 1);
+        }
 
-        batch.draw(blockTextureRegion.get(2), tile.pos.x * PPM, tile.pos.y * PPM);
+        batch.draw(blockTextureRegion.get(2), tile.pos.x, tile.pos.y, 1, 1);
         batch.end();
     }
 
+    /**
+     * Contains info about single grid square
+     */
+    class Square {
+        int image = 0;
+    }
 
     class Tile {
         final Vector2 pos = new Vector2(2.3f, 3);
@@ -90,7 +109,7 @@ public class HelloApp extends ApplicationAdapter {
                 Vector3 touchPos = new Vector3();
                 touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
                 camera.unproject(touchPos);
-                target.set(MathUtils.floor(touchPos.x / PPM), MathUtils.floor(touchPos.y / PPM));
+                target.set(MathUtils.floor(touchPos.x), MathUtils.floor(touchPos.y));
             }
 
             if (target.dst2(pos) < 0.0001) {
