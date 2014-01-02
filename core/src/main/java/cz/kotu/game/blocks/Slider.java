@@ -15,7 +15,7 @@ class Slider extends Block {
 
     @Override
     public void update() {
-        textureRegion = T.blockTextureRegion.get(3);
+//        textureRegion = T.blockTextureRegion.get(3);
 
 //        target.set(MathUtils.round(pos.x), MathUtils.round(pos.y));
 
@@ -27,8 +27,7 @@ class Slider extends Block {
         // integral position (round)
         Vector2 round = new Vector2();
         round.set(pos);
-        round.x = MathUtils.round(round.x);
-        round.y = MathUtils.round(round.y);
+        round(round);
 
         Vector2 trunc = new Vector2();
         trunc.set(pos).sub(round);
@@ -61,6 +60,11 @@ class Slider extends Block {
 
 //            pos.set(target);
 
+    }
+
+    static void round(Vector2 round) {
+        round.x = MathUtils.round(round.x);
+        round.y = MathUtils.round(round.y);
     }
 
     public Rectangle getRect() {

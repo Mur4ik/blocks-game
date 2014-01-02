@@ -11,6 +11,9 @@ import cz.kotu.grids.LinPos;
 import cz.kotu.grids.LinearGrid;
 import cz.kotu.grids.Pos;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Stage {
 
 
@@ -37,7 +40,7 @@ public class Stage {
         }
         {
             Slider slider = new Slider();
-            slider.textureRegion = T.blockTextureRegion.get(4);
+            slider.textureRegion = T.blockTextureRegion.get(3);
             slider.setPos(5, 6.4f);
             slider.target.set(5, 6);
             blocks.add(slider);
@@ -45,7 +48,7 @@ public class Stage {
 
         {
             Slider slider = new Slider();
-            slider.textureRegion = T.blockTextureRegion.get(4);
+            slider.textureRegion = T.blockTextureRegion.get(3);
             slider.setPos(5, 6.4f);
             slider.target.set(2, 6);
             blocks.add(slider);
@@ -120,6 +123,8 @@ public class Stage {
         }
     }
 
+    final Map<Integer, Slider> draggedMap = new HashMap<Integer, Slider>();
+
     public boolean touchDown(float x, float y, int pointer, int button) {
         for (Slider slider : getBlocksOfType(Slider.class)) {
             if (slider.getRect().contains(x, y)) {
@@ -127,7 +132,7 @@ public class Stage {
                 slider.getRect().getCenter(v);
                 v.sub(x, y);
                 slider.target.add(v);
-
+                draggedMap.put(pointer, slider);
             }
         }
         return true;
@@ -138,7 +143,9 @@ public class Stage {
     }
 
     public boolean touchUp(float x, float y, int pointer, int button) {
-        for (Slider slider : getBlocksOfType(Slider.class)) {
+        final Slider slider = draggedMap.get(pointer);
+
+        if (slider != null) {
             final int fx = MathUtils.floor(x);
             final int fy = MathUtils.floor(y);
             slider.target.set(fx, fy);
