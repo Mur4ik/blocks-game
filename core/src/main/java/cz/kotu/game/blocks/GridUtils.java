@@ -1,4 +1,4 @@
-package com.badlogic.gradletest;
+package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.utils.Predicate;
 import cz.kotu.grids.Dir;
