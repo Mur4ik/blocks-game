@@ -21,7 +21,6 @@ import cz.kotu.grids.Pos;
 
 
 public class HelloApp extends ApplicationAdapter {
-
     SpriteBatch batch;
     Texture img;
     final Array<TextureRegion> blockTextureRegion = new Array<TextureRegion>(16);
@@ -32,6 +31,7 @@ public class HelloApp extends ApplicationAdapter {
 
     GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private LinearGrid blockTexs;
+    private Sprite[] blockSprites;
 
     @Override
     public void create() {
@@ -46,6 +46,7 @@ public class HelloApp extends ApplicationAdapter {
 
         initBlockTextures();
 
+        blockSprites = createBlockSprites();
 
 //		try {
 //			new FreeTypeFontGenerator(Gdx.files.internal("test.fnt"));
@@ -78,6 +79,79 @@ public class HelloApp extends ApplicationAdapter {
 
     }
 
+    /**
+     * Creates set of 16 Sprites depending on 4-neighbourhood of tile
+     *
+     * @see com.badlogic.gradletest.GridUtils.getNeighHash()
+     */
+    Sprite[] createBlockSprites() {
+
+        final int E = 1 << 0;
+        final int N = 1 << 1;
+        final int W = 1 << 2;
+        final int S = 1 << 3;
+
+        // one is template for other templates
+        Sprite sprite = new Sprite(blockTextureRegion.get(11));
+        sprite.setSize(1, 1);
+        sprite.setOrigin(0.5f, 0.5f);
+
+        // capture 16 templates in proper state
+        Sprite[] sprites = new Sprite[16];
+        sprites[0] = new Sprite(sprite);
+
+        // one edge on east
+        sprite.setRegion(blockTextureRegion.get(10));
+        sprites[E] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[N] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[W] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[S] = new Sprite(sprite);
+        sprite.rotate90(false);
+
+        // two opposite edges E and W
+        sprite.setRegion(blockTextureRegion.get(9));
+        sprites[E | W] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[N | S] = new Sprite(sprite);
+        sprite.rotate90(true);
+
+//        two edges E and N
+        sprite.setRegion(blockTextureRegion.get(7));
+        sprite.flip(true, true);
+        sprites[E | N] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[N | W] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[W | S] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[S | E] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprite.flip(true, true);
+
+//      three edges E and N and W
+        sprite.setRegion(blockTextureRegion.get(12));
+        sprite.flip(true, true);
+        sprites[E | N | W] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[N | W | S] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[W | S | E] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprites[S | E | N] = new Sprite(sprite);
+        sprite.rotate90(false);
+        sprite.flip(true, true);
+
+        // all edges
+        sprite.setRegion(blockTextureRegion.get(8));
+        sprites[E | N | W | S] = new Sprite(sprite);
+
+        return sprites;
+
+    }
+
     @Override
     public void render() {
         Gdx.gl.glClearColor(1, 0, 0, 1);
@@ -95,7 +169,7 @@ public class HelloApp extends ApplicationAdapter {
         for (LinPos p : grid.getLinGrid()) {
             final Square square = grid.get(p.i);
 
-            int neighHash = GridUtils.getNeighHash(p, new Predicate<Pos>() {
+            final int neighHash = GridUtils.getNeighHash(p, new Predicate<Pos>() {
                 @Override
                 public boolean evaluate(Pos pos) {
                     final Square nsquare = grid.get(pos);
@@ -107,35 +181,24 @@ public class HelloApp extends ApplicationAdapter {
                 }
             });
 
-            neighHash /= 2;
+            if (square.count > 0) {
 
-            int image = neighHash;
+                final Sprite sprite = blockSprites[neighHash];
+
+                sprite.setPosition(p.x, p.y);
+
+                sprite.draw(batch);
+            } else {
+                int image = neighHash / 4;
 
 //            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, MathUtils.random(8)* 45);
 //            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, 45);
-            batch.draw(blockTextureRegion.get(image), p.x, p.y, 1, 1);
+                batch.draw(blockTextureRegion.get(image), p.x, p.y, 1, 1);
 
+            }
         }
 
         batch.draw(blockTextureRegion.get(2), tile.pos.x, tile.pos.y, 1, 1);
-
-        Sprite sprite = new Sprite(blockTextureRegion.get(1));
-//        sprite.setRegionWidth(1);
-//        sprite.setRegionHeight(1);
-//        sprite.setScale(0.5f);
-        sprite.setOrigin(0f, 0f);
-//        sprite.setOrigin(0.5f, 0.5f);
-        sprite.setSize(1, 1);
-//        sprite.setScale(0.02f);
-//        sprite.setOrigin(25f, 25f);
-        sprite.setOrigin(0.5f, 0.5f);
-        sprite.setRotation(30);
-//        sprite.rotate90(false);
-        sprite.setPosition(4, 3);
-//        sprite.setPosition(0, 0);
-//        sprite.setPosition(4, 3);
-//        batch.draw(sprite, 4, 4);
-        sprite.draw(batch);
 
         batch.end();
     }
