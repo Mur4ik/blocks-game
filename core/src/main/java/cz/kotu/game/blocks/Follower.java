@@ -1,5 +1,6 @@
 package cz.kotu.game.blocks;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
@@ -45,4 +46,9 @@ class Follower extends Block {
 
     }
 
+    @Override
+    void draw(SpriteBatch batch) {
+        batch.draw(T.blockTextureRegion.get(6), target.x, target.y, 1, 1);
+        super.draw(batch);
+    }
 }

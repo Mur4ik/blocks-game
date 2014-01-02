@@ -3,6 +3,7 @@ package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -39,10 +40,9 @@ public class HelloApp extends ApplicationAdapter {
 //		}
 //		Bullet.init();
 
-
+        Gdx.input.setInputProcessor(new LocalInputProcessor());
 
     }
-
 
 
     @Override
@@ -73,6 +73,40 @@ public class HelloApp extends ApplicationAdapter {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             stage.pointerDown(touchPos.x, touchPos.y);
+        }
+    }
+
+    class LocalInputProcessor extends InputAdapter {
+
+        final Vector3 touchPos = new Vector3();
+
+        @Override
+        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+
+            unproject(screenX, screenY);
+
+            return stage.touchDown(touchPos.x, touchPos.y, pointer, button);
+        }
+
+        @Override
+        public boolean touchDragged(int screenX, int screenY, int pointer) {
+
+            unproject(screenX, screenY);
+
+            return stage.touchDragged(touchPos.x, touchPos.y, pointer);
+        }
+
+        @Override
+        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+
+            unproject(screenX, screenY);
+
+            return stage.touchUp(touchPos.x, touchPos.y, pointer, button);
+        }
+
+        private void unproject(int screenX, int screenY) {
+            touchPos.set(screenX, screenY, 0);
+            camera.unproject(touchPos);
         }
     }
 
