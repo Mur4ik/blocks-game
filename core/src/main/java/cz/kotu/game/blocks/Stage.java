@@ -3,7 +3,6 @@ package cz.kotu.game.blocks;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
 import cz.kotu.grids.GenericGrid;
@@ -128,10 +127,10 @@ public class Stage {
     public boolean touchDown(float x, float y, int pointer, int button) {
         for (Slider slider : getBlocksOfType(Slider.class)) {
             if (slider.getRect().contains(x, y)) {
-                final Vector2 v = new Vector2();
-                slider.getRect().getCenter(v);
-                v.sub(x, y);
-                slider.target.add(v);
+//                final Vector2 v = new Vector2();
+//                slider.getRect().getCenter(v);
+//                v.sub(x, y);
+//                slider.target.add(v);
                 draggedMap.put(pointer, slider);
             }
         }
@@ -149,6 +148,7 @@ public class Stage {
             final int fx = MathUtils.floor(x);
             final int fy = MathUtils.floor(y);
             slider.target.set(fx, fy);
+            draggedMap.remove(pointer);
         }
         return true;
     }

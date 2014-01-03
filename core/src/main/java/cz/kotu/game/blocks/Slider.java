@@ -6,11 +6,13 @@ import com.badlogic.gdx.math.Vector2;
 
 class Slider extends Block {
 
-    // helper fields
+    // state fields
     final Vector2 target = new Vector2();
+    final Vector2 velocity = new Vector2();
+
+    // helper fields
     final Vector2 target1 = new Vector2();
     final Vector2 dir = new Vector2();
-    final Vector2 velocity = new Vector2();
     final Rectangle rect = new Rectangle();
 
     @Override
@@ -22,7 +24,7 @@ class Slider extends Block {
         if (target.dst2(pos) < 0.0001f) {
 //                target.add(1, 0);
         }
-        target1.set(target);
+//        target1.set(target);
 
         // integral position (round)
         Vector2 round = new Vector2();
@@ -41,22 +43,30 @@ class Slider extends Block {
         if (snappedx && snappedy) {
 
             if (Math.abs(targetDir.x) < Math.abs(targetDir.y)) {
-                targetDir.x = 0;
+//                targetDir.x = 0;
             } else {
-                targetDir.y = 0;
+//                targetDir.y = 0;
             }
         } else {
             if (snappedx) {
-                targetDir.x = 0;
-                target1.x = pos.x;
+//                targetDir.x = 0;
             } else {
-                targetDir.y = 0;
-                target1.y = pos.y;
+//                targetDir.y = 0;
             }
         }
-        targetDir.scl(0.1f);
+//        targetDir.scl(0.1f);
 
-        pos.add(targetDir);
+        // fraction of second per this step
+        final float dt = 1f / 60f;
+        final float maxV = 3f * dt;
+        final float maxAcc = 1f * dt * dt;
+
+        velocity.x = MoveUtils.goAccFastestDec(velocity.x, targetDir.x, maxV, maxAcc);
+        velocity.y = MoveUtils.goAccFastestDec(velocity.y, targetDir.y, maxV, maxAcc);
+
+        pos.add(velocity);
+
+//        pos.y = velocity.x/dt;
 
 //            pos.set(target);
 
