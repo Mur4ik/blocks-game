@@ -17,9 +17,9 @@ public class MoveUtils {
             return -goAccFastestDec(-v, -d, maxV, maxAcc);
         }
 
-        // can stop immediately this step
+        // can stop immediately after this step
         if (Math.abs(v - d) <= maxAcc) {
-            return d;
+//            return d;
         }
 
         // maximum velocity for d that can be decelerated to stop properly without overshot
@@ -28,7 +28,9 @@ public class MoveUtils {
         if (v >= limitV) {
             // need to decelerate - almost there and will overshot
             v -= maxAcc;
-            v = Math.min(v, limitV);
+            // do not decelerate more than necessary
+//            v = Math.max(limitV, v - maxAcc);
+//            v = Math.min(v, limitV);
         } else {
             // accelerate, but keep in mind limits
             v += maxAcc;
@@ -36,7 +38,7 @@ public class MoveUtils {
             v = Math.min(v, limitV);
         }
 
-        v = Math.min(v, d);
+//        v = Math.min(v, d);
 
         return v;
 
