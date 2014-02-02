@@ -3,6 +3,7 @@ package cz.kotu.game.blocks;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
 import cz.kotu.grids.GenericGrid;
@@ -13,14 +14,17 @@ import cz.kotu.grids.Pos;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Stage {
+public class GridStage extends BaseStage {
 
+    private SpriteBatch batch;
 
     final Array<Block> blocks = new Array<Block>();
     GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private Follower follower;
 
     void init() {
+
+        batch = new SpriteBatch();
 
         // populate grid
         for (LinPos p : grid.getLinGrid()) {
@@ -74,7 +78,11 @@ public class Stage {
         return (Iterable<T>) new Predicate.PredicateIterable<Block>(blocks, instanceOfPredicate);
     }
 
-    void draw(SpriteBatch batch1) {
+    void draw(Matrix4 combined) {
+        batch.setProjectionMatrix(combined);
+
+        batch.begin();
+
         for (LinPos p : grid.getLinGrid()) {
             final Square square = grid.get(p.i);
 
@@ -96,23 +104,24 @@ public class Stage {
 
                 sprite.setPosition(p.x, p.y);
 
-                sprite.draw(batch1);
+                sprite.draw(batch);
             } else {
                 int image = neighHash / 4;
 
 //            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, MathUtils.random(8)* 45);
 //            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, 45);
-                batch1.draw(T.blockTextureRegion.get(image), p.x, p.y, 1, 1);
+                batch.draw(T.blockTextureRegion.get(image), p.x, p.y, 1, 1);
 
             }
         }
 
         for (Block block : blocks) {
-            block.draw(batch1);
+            block.draw(batch);
         }
+        batch.end();
     }
 
-    void pointerDown(float x1, float y1) {
+    public void pointerDown(float x1, float y1) {
         final int x = MathUtils.floor(x1);
         final int y = MathUtils.floor(y1);
         follower.target.set(x, y);

@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
 
@@ -15,7 +16,9 @@ public class HelloApp extends ApplicationAdapter {
 
     OrthographicCamera camera;
 
-    Stage stage;
+    BaseStage stage;
+
+    private ShapeRenderer shapeRenderer;
 
     @Override
     public void create() {
@@ -25,13 +28,15 @@ public class HelloApp extends ApplicationAdapter {
         camera.translate(-2, -2);
 
         batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
 
         T.loadTextures();
 
-        stage = new Stage();
+//        stage = new BaseStage();
+//        stage = new GridStage();
+        stage = new HexStage();
 
         stage.init();
-
 
 //		try {
 //			new FreeTypeFontGenerator(Gdx.files.internal("test.fnt"));
@@ -50,20 +55,31 @@ public class HelloApp extends ApplicationAdapter {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
+        batch.setProjectionMatrix(camera.combined);
+
         processInputs();
 
         stage.update();
 
         camera.update();
 
-        batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
         batch.draw(T.img, 0, 0);
-
-        stage.draw(batch);
-
         batch.end();
+
+        stage.draw(camera.combined);
+
+
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//        shapeRenderer.setColor(1, 1, 0, 1);
+//
+////        shapeRenderer.line(x, y, x2, y2);
+//        shapeRenderer.rect(1, 1, 200, 200);
+////        shapeRenderer.circle(x, y, radius);
+//
+//        shapeRenderer.end();
+
     }
 
 
