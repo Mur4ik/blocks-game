@@ -35,7 +35,7 @@ class HexCoords {
 
     void drawHex(float u, float v, ShapeRenderer shapeRenderer) {
         Vector2 origin = new Vector2(u, v);
-        origin.mul(hexCoords);
+        proj(origin);
 
         Vector2[] verts = getHexVerts();
 
@@ -45,7 +45,7 @@ class HexCoords {
 
 //             hexCoords.;
 
-            verts[i].mul(hexCoords);
+            proj(verts[i]);
             verts[i].add(origin);
 
             polys[2 * i] = verts[i].x;
@@ -54,6 +54,15 @@ class HexCoords {
 
         shapeRenderer.polyline(polys);
     }
+
+    private void proj(Vector2 uv) {
+        uv.mul(hexCoords);
+    }
+
+//    private void unproj(Vector2 screen) {
+//
+//        xyz.mul(hexCoords);
+//    }
 
     Vector2[] getHexVerts() {
         return new Vector2[]{
@@ -100,46 +109,3 @@ class HexCoords2 extends HexCoords {
     }
 }
 
-/**
- * http://keekerdc.com/2011/03/hexagon-grids-coordinate-systems-and-distance-calculations/
- */
-class HexCoords3 extends HexCoords {
-
-    final Vector2 x;
-    final Vector2 y;
-    final Vector2 z;
-
-    HexCoords3() {
-        super(new Vector2(H, -0.5f), new Vector2(0, 1f));
-        x = u;
-        y = v;
-        z = new Vector2().sub(x).sub(y);
-    }
-
-    @Override
-    Vector2[] getHexVerts() {
-
-        return new Vector2[]{
-                new Vector2(1, 0),  // -1
-                new Vector2(1, 1),  // -2
-                new Vector2(0, 1),  // -1
-                new Vector2(-1, 0), // 1
-                new Vector2(-1, -1),// 2
-                new Vector2(0, -1), // 1
-        };
-    }
-
-    void drawHexGrid(ShapeRenderer shapeRenderer) {
-        int w = 6;
-        int h = 4;
-
-        for (float v = 0; v < h; v++) {
-            for (float u0 = 0; u0 < w; u0++) {
-                float u = u0 - (int) v / 2;
-                shapeRenderer.setColor(u % 2, v % 2, (-u - v) % 2, 1);
-                drawHex(2 * u + v, 2 * v + u, shapeRenderer);
-            }
-        }
-    }
-
-}

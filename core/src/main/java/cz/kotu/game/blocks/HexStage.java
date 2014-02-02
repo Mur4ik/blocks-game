@@ -1,10 +1,13 @@
 package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,15 +17,18 @@ public class HexStage extends BaseStage {
 
     HexCoords hexCoords2 = new HexCoords2();
 
-    HexCoords hexCoords3 = new HexCoords3();
+    HexCoords3 hexCoords3 = new HexCoords3();
 
-    final Array<Hex> blocks = new Array<Hex>();
+    final Array<Hex> hexes = new Array<Hex>();
     //    GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
-    private Follower follower;
+    private Hex follower;
 
     ShapeRenderer shapeRenderer;
+    private Vector3 touch = new Vector3();
+
 
     void init() {
+        super.init();
 
         // populate grid
 //        for (LinPos p : grid.getLinGrid()) {
@@ -32,20 +38,18 @@ public class HexStage extends BaseStage {
 
 //        {
 //            Hex block = new Hex().setPos(2.3f, 3);
-//            blocks.add(block);
+//            hexes.add(block);
 //        }
 //        {
-//            follower = new Follower();
-//            follower.textureRegion = T.blockTextureRegion.get(4);
-//            follower.setPos(8f, 3);
-//            blocks.add(follower);
+        follower = new Hex();
+        hexes.add(follower);
 //        }
 //        {
 //            Slider slider = new Slider();
 //            slider.textureRegion = T.blockTextureRegion.get(3);
 //            slider.setPos(5, 6.4f);
 //            slider.target.set(5, 6);
-//            blocks.add(slider);
+//            hexes.add(slider);
 //        }
 //
 //        {
@@ -53,14 +57,14 @@ public class HexStage extends BaseStage {
 //            slider.textureRegion = T.blockTextureRegion.get(3);
 //            slider.setPos(5, 6.4f);
 //            slider.target.set(2, 6);
-//            blocks.add(slider);
+//            hexes.add(slider);
 //        }
 
     }
 
     void update() {
 
-        for (Hex block : blocks) {
+        for (Hex block : hexes) {
             block.update();
         }
 
@@ -74,7 +78,7 @@ public class HexStage extends BaseStage {
                 return clss.isInstance(block);
             }
         };
-        return (Iterable<T>) new Predicate.PredicateIterable<Hex>(blocks, instanceOfPredicate);
+        return (Iterable<T>) new Predicate.PredicateIterable<Hex>(hexes, instanceOfPredicate);
     }
 
     void draw(Matrix4 combined) {
@@ -112,6 +116,14 @@ public class HexStage extends BaseStage {
 //        shapeRenderer.rect(1, 1, 1, 1);
 //        shapeRenderer.circle(x, y, radius);
 
+        shapeRenderer.setColor(1, 1, 1, 1);
+
+        hexCoords3.drawHex(follower.pos, shapeRenderer);
+
+        hexCoords3.drawHex(touch, shapeRenderer);
+
+        hexCoords3.drawHex(round(touch.cpy()), shapeRenderer);
+
         shapeRenderer.end();
 
 //        for (LinPos p : grid.getLinGrid()) {
@@ -146,9 +158,33 @@ public class HexStage extends BaseStage {
 //            }
 //        }
 
-        for (Hex block : blocks) {
+        for (Hex block : hexes) {
 //            block.draw(shapeRenderer);
         }
+
+        batch.setProjectionMatrix(combined.cpy().scl(1 / 16f));
+
+        batch.begin();
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+//        decimalFormat.format(1.199); //"1.2"
+
+//        font.setScale();
+        {
+            font.draw(batch, "x: " + decimalFormat.format(touch.x) +
+                    " y: " + decimalFormat.format(touch.y) +
+                    " z: " + decimalFormat.format(touch.z) +
+                    " s: " + decimalFormat.format(touch.x + touch.y + touch.z), 0, 10 * 16);
+        }
+        {
+            font.draw(batch, "x: " + decimalFormat.format(follower.pos.x) +
+                    " y: " + decimalFormat.format(follower.pos.y) +
+                    " z: " + decimalFormat.format(follower.pos.z) +
+                    " s: " + decimalFormat.format(follower.pos.x + follower.pos.y + follower.pos.z), 0, 9 * 16);
+        }
+
+        batch.end();
+
     }
 
     public void pointerDown(float x1, float y1) {
@@ -176,7 +212,24 @@ public class HexStage extends BaseStage {
         return true;
     }
 
-    public boolean touchDragged(float x, float y, int pointer) {
+    public boolean touchDragged(float screenx, float screeny, int pointer) {
+        Vector3 screen = new Vector3(screenx, screeny, 0);
+        float x = hexCoords3.x.dot(screen);
+//        x = Math.max(0, x);
+//        screen.sub(hexCoords3.x.cpy().scl(x));
+        float y = hexCoords3.y.dot(screen);
+//        y = Math.max(0, y);
+//        screen.sub(hexCoords3.y.cpy().scl(y));
+        float z = hexCoords3.z.dot(screen);
+//        z = Math.max(0, z);
+//        screen.sub(hexCoords3.z.cpy().scl(z));
+//        float z = hexCoords3.z.dot(screen);
+//        float y = hexCoords3.y.dot(screen.sub(hexCoords3.x.cpy().scl(x)));
+//        float z = hexCoords3.z.dot(screen.sub(hexCoords3.x.cpy().scl(x)).sub(hexCoords3.y.cpy().scl(y)));
+//                float z = 0;
+//        touch.set(x, y, hexCoords3.z(x, y));
+        touch.set(x, y, z);
+        touch.scl(2 / 3f);
         return false;
     }
 
@@ -190,6 +243,41 @@ public class HexStage extends BaseStage {
             draggedMap.remove(pointer);
         }
         return true;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        switch (character) {
+            case 'd':
+                follower.pos.x++;
+                follower.pos.z--;
+                break;
+            case 'e':
+                follower.pos.y++;
+                follower.pos.z--;
+                break;
+            case 'w':
+                follower.pos.y++;
+                follower.pos.x--;
+                break;
+            case 'a':
+                follower.pos.z++;
+                follower.pos.x--;
+                break;
+            case 'z':
+                follower.pos.z++;
+                follower.pos.y--;
+                break;
+            case 'x':
+                follower.pos.x++;
+                follower.pos.y--;
+                break;
+        }
+        return super.keyTyped(character);
+    }
+
+    public static Vector3 round(Vector3 round) {
+        return round.set(MathUtils.round(round.x), MathUtils.round(round.y), MathUtils.round(round.z));
     }
 
 }

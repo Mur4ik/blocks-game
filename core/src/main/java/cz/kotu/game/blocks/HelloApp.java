@@ -124,6 +124,11 @@ public class HelloApp extends ApplicationAdapter {
             touchPos.set(screenX, screenY, 0);
             camera.unproject(touchPos);
         }
+
+        @Override
+        public boolean keyTyped(char character) {
+            return stage.keyTyped(character);
+        }
     }
 
 }

@@ -1,20 +1,14 @@
 package cz.kotu.game.blocks;
 
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Predicate;
-import cz.kotu.grids.GenericGrid;
-import cz.kotu.grids.LinPos;
-import cz.kotu.grids.LinearGrid;
-import cz.kotu.grids.Pos;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class BaseStage {
+
+    final SpriteBatch batch = new SpriteBatch();
+
+    final BitmapFont font = new BitmapFont();
 
     void init() {
 
@@ -45,4 +39,7 @@ public class BaseStage {
     }
 
 
+    public boolean keyTyped(char character) {
+        return false;
+    }
 }

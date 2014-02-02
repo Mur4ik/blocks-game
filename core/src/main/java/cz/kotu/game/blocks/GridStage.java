@@ -1,7 +1,6 @@
 package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Array;
@@ -16,15 +15,12 @@ import java.util.Map;
 
 public class GridStage extends BaseStage {
 
-    private SpriteBatch batch;
-
     final Array<Block> blocks = new Array<Block>();
     GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private Follower follower;
 
     void init() {
-
-        batch = new SpriteBatch();
+        super.init();
 
         // populate grid
         for (LinPos p : grid.getLinGrid()) {
