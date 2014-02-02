@@ -6,7 +6,16 @@ run {
 
 mainClassName = "com.badlogic.gradletest.DesktopLauncher"
 
-sourceSets.main.resources.srcDirs = [file("../android/assets").getAbsolutePath()]
+sourceSets.main.resources.srcDirs = [file("../android/src/main/assets").getAbsolutePath()]
+
+task uberJar(type: Jar) {
+    from files(sourceSets.main.output.classesDir)
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
 
 eclipse.project {
     name = appName + "-desktop"
