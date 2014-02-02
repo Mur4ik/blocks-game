@@ -12,6 +12,10 @@ public class HexStage extends BaseStage {
 
     HexCoords hexCoords = new HexCoords();
 
+    HexCoords hexCoords2 = new HexCoords2();
+
+    HexCoords hexCoords3 = new HexCoords3();
+
     final Array<Hex> blocks = new Array<Hex>();
     //    GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private Follower follower;
@@ -100,13 +104,10 @@ public class HexStage extends BaseStage {
 //                new Vector2(0, 1),
 //        };
 
-        shapeRenderer.setColor(1, 0, 1, 1);
-
-        hexCoords.drawHex(0, 0, shapeRenderer);
-
-        shapeRenderer.setColor(0, 1, 1, 1);
-
-        hexCoords.drawHex(1, 1, shapeRenderer);
+//        hexCoords.drawHexGrid(this.shapeRenderer);
+//        hexCoords2.drawHexGrid(this.shapeRenderer);
+//        hexCoords3.drawHex(0, 0, shapeRenderer);
+        hexCoords3.drawHexGrid(this.shapeRenderer);
 
 //        shapeRenderer.rect(1, 1, 1, 1);
 //        shapeRenderer.circle(x, y, radius);
