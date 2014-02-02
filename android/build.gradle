@@ -1,32 +1,18 @@
 android {
     buildToolsVersion "19.0.1"
     compileSdkVersion 19
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-            jniLibs.srcDirs = ['libs']
-        }
-
-        instrumentTest.setRoot('tests')
-    }
 }
 
 /**
  * Executed once at the beginning of any use of the gradle command with this build file.
- takes the native dependencies of the natives configuration, and extracts them to the proper libs/ folders
+ takes the native dependencies of the natives configuration, and extracts them to the proper src/main/jniLibs/ folders
  so they get packed with the APK.
  */
 task copyAndroidNatives() {
     configurations.natives.files.each { jar ->
         def outputDir = null
-        if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
-        if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
+        if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("src/main/jniLibs/armeabi-v7a")
+        if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("src/main/jniLibs/armeabi")
         if (outputDir != null) {
             copy {
                 from zipTree(jar)
