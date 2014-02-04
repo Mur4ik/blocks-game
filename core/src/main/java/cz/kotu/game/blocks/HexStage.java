@@ -13,10 +13,6 @@ import java.util.Map;
 
 public class HexStage extends BaseStage {
 
-    HexCoords hexCoords = new HexCoords();
-
-    HexCoords hexCoords2 = new HexCoords2();
-
     HexCoords3 hexCoords3 = new HexCoords3();
 
     final Array<Hex> hexes = new Array<Hex>();
