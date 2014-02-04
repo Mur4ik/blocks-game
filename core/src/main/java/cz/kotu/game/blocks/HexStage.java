@@ -108,7 +108,7 @@ public class HexStage extends BaseStage {
 //                new Vector2(0, 1),
 //        };
 
-//        hexCoords.drawHexGrid(this.shapeRenderer);
+//        projection.drawHexGrid(this.shapeRenderer);
 //        hexCoords2.drawHexGrid(this.shapeRenderer);
 //        hexCoords3.drawHex(0, 0, shapeRenderer);
         hexCoords3.drawHexGrid(this.shapeRenderer);
@@ -124,7 +124,7 @@ public class HexStage extends BaseStage {
 
         hexCoords3.drawHex(touch, shapeRenderer);
 
-        hexCoords3.drawHex(round(touch.cpy()), shapeRenderer);
+        hexCoords3.drawHex(HexCoords3.round(touch.cpy()), shapeRenderer);
 
         shapeRenderer.end();
 
@@ -222,29 +222,7 @@ public class HexStage extends BaseStage {
     }
 
     public boolean touchDragged(float screenx, float screeny, int pointer) {
-        Vector3 screen = new Vector3(screenx, screeny, 0);
-        float x = hexCoords3.x.dot(screen);
-//        x = Math.max(0, x);
-//        screen.sub(hexCoords3.x.cpy().scl(x));
-        float y = hexCoords3.y.dot(screen);
-//        y = Math.max(0, y);
-//        screen.sub(hexCoords3.y.cpy().scl(y));
-        float z = hexCoords3.z.dot(screen);
-//        z = Math.max(0, z);
-//        screen.sub(hexCoords3.z.cpy().scl(z));
-//        float z = hexCoords3.z.dot(screen);
-//        float y = hexCoords3.y.dot(screen.sub(hexCoords3.x.cpy().scl(x)));
-//        float z = hexCoords3.z.dot(screen.sub(hexCoords3.x.cpy().scl(x)).sub(hexCoords3.y.cpy().scl(y)));
-//                float z = 0;
-//        touch.set(x, y, hexCoords3.z(x, y));
-        touch.set(x, y, z);
-        touch.scl(2 / 3f);
-
-        Matrix4 inv = hexCoords3.hexCoords.cpy().inv();
-        // unproject
-        screen.mul(inv);
-
-        touch.set(screen);
+        hexCoords3.unproject(screenx, screeny, touch);
 
         return false;
     }
@@ -328,10 +306,6 @@ public class HexStage extends BaseStage {
         }
 
         return super.keyTyped(character);
-    }
-
-    public static Vector3 round(Vector3 round) {
-        return round.set(MathUtils.round(round.x), MathUtils.round(round.y), MathUtils.round(round.z));
     }
 
 }

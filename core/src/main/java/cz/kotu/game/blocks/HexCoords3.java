@@ -2,19 +2,32 @@ package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 /**
+ * Implementation of hex coordinates called "Cube coordinates".
+ * <p/>
  * http://keekerdc.com/2011/03/hexagon-grids-coordinate-systems-and-distance-calculations/
+ * http://www.redblobgames.com/grids/hexagons/
  */
 public class HexCoords3 {
 
     static final float H = (float) Math.sqrt(3) / 2;
+    static final float H3 = (float) 1;
 
-    final Matrix4 hexCoords = new Matrix4();
+    /**
+     * Matrix that projects cube hex coordinates into x, y orthogonal (graphic) plane coordinates.
+     */
+    final Matrix4 projection = new Matrix4();
 
+    final Matrix4 projectionInverse = new Matrix4();
+
+    /**
+     * Virtual cube vectors - each cube coordinate (x, y, z) is the factor of its appropriate base vector.
+     */
     final Vector3 x;
     final Vector3 y;
     final Vector3 z;
@@ -22,57 +35,41 @@ public class HexCoords3 {
     HexCoords3() {
         x = new Vector3(H, -0.5f, 0);
         y = new Vector3(0, 1f, 0);
+//        z = new Vector3(-H, -0.5f, 0);
         z = new Vector3().sub(x).sub(y);
         // imaginary z coordinate is used for inverse projection only
-        x.z = y.z = z.z = 1;
-//        z = new Vector3(-H, -0.5f, 0);
+        x.z = y.z = z.z = H3;
 
-        hexCoords.val[Matrix4.M00] = x.x;
-        hexCoords.val[Matrix4.M10] = x.y;
-        hexCoords.val[Matrix4.M20] = x.z;
-        hexCoords.val[Matrix4.M01] = y.x;
-        hexCoords.val[Matrix4.M11] = y.y;
-        hexCoords.val[Matrix4.M21] = y.z;
-        hexCoords.val[Matrix4.M02] = z.x;
-        hexCoords.val[Matrix4.M12] = z.y;
-        hexCoords.val[Matrix4.M22] = z.z;
+//        initializing projection matrix with its base vectors
+        projection.val[Matrix4.M00] = x.x;
+        projection.val[Matrix4.M10] = x.y;
+        projection.val[Matrix4.M20] = x.z;
 
-//        hexCoords.val[Matrix4.M00] = x.x;
-//        hexCoords.val[Matrix4.M01] = x.y;
-//        hexCoords.val[Matrix4.M10] = y.x;
-//        hexCoords.val[Matrix4.M11] = y.y;
-//        hexCoords.val[Matrix4.M20] = z.x;
-//        hexCoords.val[Matrix4.M21] = z.y;
+        projection.val[Matrix4.M01] = y.x;
+        projection.val[Matrix4.M11] = y.y;
+        projection.val[Matrix4.M21] = y.z;
 
+        projection.val[Matrix4.M02] = z.x;
+        projection.val[Matrix4.M12] = z.y;
+        projection.val[Matrix4.M22] = z.z;
+
+        projectionInverse.set(projection.val);
+        projectionInverse.inv();
     }
 
     Vector3[] getHexVerts() {
+        return getHexVerts(1);
+    }
 
-//        return new Vector3[]{
-//                new Vector3(1, 0,  -1),
-//                new Vector3(1, 1,  -2),
-//                new Vector3(0, 1,  -1),
-//                new Vector3(-1, 0,  1),
-//                new Vector3(-1, -1, 2),
-//                new Vector3(0, -1,  1),
-//        };
-
-//        return new Vector3[]{
-//                new Vector3(1, 0,  0),// -1
-//                new Vector3(1, 1,  0),// -2
-//                new Vector3(0, 1,  0),// -1
-//                new Vector3(-1, 0, 0),//  1
-//                new Vector3(-1, -1,0),//  2
-//                new Vector3(0, -1, 0),//  1
-//        };
+    Vector3[] getHexVerts(int size) {
 
         return new Vector3[]{
-                new Vector3(1, 0, 0),
-                new Vector3(1, 1, 0),
-                new Vector3(0, 1, 0),
-                new Vector3(0, 1, 1),
-                new Vector3(0, 0, 1),
-                new Vector3(1, 0, 1),
+                new Vector3(size, 0, 0),
+                new Vector3(size, size, 0),
+                new Vector3(0, size, 0),
+                new Vector3(0, size, size),
+                new Vector3(0, 0, size),
+                new Vector3(size, 0, size),
         };
 
     }
@@ -81,7 +78,7 @@ public class HexCoords3 {
 
         Vector3 o = new Vector3(origin);
 
-        proj(o);
+        project(o);
 
         Vector3[] verts = getHexVerts();
 
@@ -89,9 +86,9 @@ public class HexCoords3 {
 
         for (int i = 0; i < verts.length; i++) {
 
-//             hexCoords.;
+//             projection.;
 
-            proj(verts[i]);
+            project(verts[i]);
             verts[i].add(o);
 
             polys[2 * i] = verts[i].x;
@@ -124,7 +121,7 @@ public class HexCoords3 {
             for (int x = 0; x < w * 2; x++) {
                 shapeRenderer.setColor(x % 2, y % 2, (-x - y) % 2, 1);
                 Vector3 v = new Vector3(x, y, 0);
-                proj(v);
+                project(v);
                 int s = (int) v.x + (int) v.y + (int) v.z;
                 switch (s % 2) {
                     case 0:
@@ -147,8 +144,14 @@ public class HexCoords3 {
 
     }
 
-    private void proj(Vector3 uv) {
-        uv.mul(hexCoords);
+    private void project(Vector3 uv) {
+        uv.mul(projection);
+    }
+
+    void unproject(float screenx, float screeny, Vector3 outCube) {
+        outCube.set(screenx, screeny, 0);
+        // unproject
+        outCube.mul(projectionInverse);
     }
 
     float z(Vector2 vec) {
@@ -171,6 +174,11 @@ public class HexCoords3 {
     float distance(Vector2 v1, Vector2 v2) {
         Vector3 dir = new Vector3(v2.x - v1.x, v2.y - v1.y, z(v2) - z(v1));
         return Math.max(Math.max(dir.x, dir.y), dir.z);
+    }
+
+    // TODO there is better implementation of round that always returns center of hex - this does not
+    public static Vector3 round(Vector3 round) {
+        return round.set(MathUtils.round(round.x), MathUtils.round(round.y), MathUtils.round(round.z));
     }
 
 }
