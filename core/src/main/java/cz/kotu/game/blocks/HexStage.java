@@ -306,12 +306,19 @@ public class HexStage extends BaseStage {
                 halfling.pos.y++;
                 break;
             case 'o':
-                if (sign >= 0) {
-                    halfling.pos.z--;
-                } else {
-                    halfling.pos.x++;
-                    halfling.pos.y++;
-                }
+//                halfling.pos.z--;
+//                halfling.pos.z--;
+
+                halfling.pos.z -= 0.66;
+                halfling.pos.x += 0.33;
+                halfling.pos.y += 0.33;
+
+//                if (sign >= 0) {
+//                    halfling.pos.z--;
+//                } else {
+//                    halfling.pos.x++;
+//                    halfling.pos.y++;
+//                }
                 break;
             case 'j':
                 halfling.pos.z++;
