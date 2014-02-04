@@ -23,6 +23,8 @@ public class HexStage extends BaseStage {
     //    GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private Hex follower;
 
+    private Hex halfling;
+
     ShapeRenderer shapeRenderer;
     private Vector3 touch = new Vector3();
 
@@ -43,6 +45,8 @@ public class HexStage extends BaseStage {
 //        {
         follower = new Hex();
         hexes.add(follower);
+        halfling = new Hex();
+        hexes.add(halfling);
 //        }
 //        {
 //            Slider slider = new Slider();
@@ -120,6 +124,8 @@ public class HexStage extends BaseStage {
 
         hexCoords3.drawHex(follower.pos, shapeRenderer);
 
+        hexCoords3.drawHex(halfling.pos, shapeRenderer);
+
         hexCoords3.drawHex(touch, shapeRenderer);
 
         hexCoords3.drawHex(round(touch.cpy()), shapeRenderer);
@@ -182,6 +188,13 @@ public class HexStage extends BaseStage {
                     " z: " + decimalFormat.format(follower.pos.z) +
                     " s: " + decimalFormat.format(follower.pos.x + follower.pos.y + follower.pos.z), 0, 9 * 16);
         }
+        {
+            font.draw(batch, "x: " + decimalFormat.format(halfling.pos.x) +
+                    " y: " + decimalFormat.format(halfling.pos.y) +
+                    " z: " + decimalFormat.format(halfling.pos.z) +
+                    " s: " + decimalFormat.format(halfling.pos.x + halfling.pos.y + halfling.pos.z), 0, 8 * 16);
+        }
+
 
         batch.end();
 
@@ -230,6 +243,13 @@ public class HexStage extends BaseStage {
 //        touch.set(x, y, hexCoords3.z(x, y));
         touch.set(x, y, z);
         touch.scl(2 / 3f);
+
+        Matrix4 inv = hexCoords3.hexCoords.cpy().inv();
+        // unproject
+        screen.mul(inv);
+
+        touch.set(screen);
+
         return false;
     }
 
@@ -247,6 +267,8 @@ public class HexStage extends BaseStage {
 
     @Override
     public boolean keyTyped(char character) {
+
+        // follower goes by tiles
         switch (character) {
             case 'd':
                 follower.pos.x++;
@@ -273,6 +295,35 @@ public class HexStage extends BaseStage {
                 follower.pos.y--;
                 break;
         }
+
+        float sign = halfling.pos.x + halfling.pos.y + halfling.pos.z;
+
+        switch (character) {
+            case 'u':
+                halfling.pos.x--;
+                break;
+            case 'i':
+                halfling.pos.y++;
+                break;
+            case 'o':
+                if (sign >= 0) {
+                    halfling.pos.z--;
+                } else {
+                    halfling.pos.x++;
+                    halfling.pos.y++;
+                }
+                break;
+            case 'j':
+                halfling.pos.z++;
+                break;
+            case 'k':
+                halfling.pos.y--;
+                break;
+            case 'l':
+                halfling.pos.x++;
+                break;
+        }
+
         return super.keyTyped(character);
     }
 

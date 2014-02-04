@@ -1,5 +1,6 @@
 package cz.kotu.game.blocks;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -22,14 +23,19 @@ public class HexCoords3 {
         x = new Vector3(H, -0.5f, 0);
         y = new Vector3(0, 1f, 0);
         z = new Vector3().sub(x).sub(y);
+        // imaginary z coordinate is used for inverse projection only
+        x.z = y.z = z.z = 1;
 //        z = new Vector3(-H, -0.5f, 0);
 
         hexCoords.val[Matrix4.M00] = x.x;
         hexCoords.val[Matrix4.M10] = x.y;
+        hexCoords.val[Matrix4.M20] = x.z;
         hexCoords.val[Matrix4.M01] = y.x;
         hexCoords.val[Matrix4.M11] = y.y;
+        hexCoords.val[Matrix4.M21] = y.z;
         hexCoords.val[Matrix4.M02] = z.x;
         hexCoords.val[Matrix4.M12] = z.y;
+        hexCoords.val[Matrix4.M22] = z.z;
 
 //        hexCoords.val[Matrix4.M00] = x.x;
 //        hexCoords.val[Matrix4.M01] = x.y;
@@ -113,6 +119,32 @@ public class HexCoords3 {
 //                drawHex(new Vector3(2 * col, 2 * rd, -2 * col - 2 * rd), shapeRenderer);
             }
         }
+
+        for (int y = 0; y < h * 2; y++) {
+            for (int x = 0; x < w * 2; x++) {
+                shapeRenderer.setColor(x % 2, y % 2, (-x - y) % 2, 1);
+                Vector3 v = new Vector3(x, y, 0);
+                proj(v);
+                int s = (int) v.x + (int) v.y + (int) v.z;
+                switch (s % 2) {
+                    case 0:
+                        shapeRenderer.setColor(Color.WHITE);
+                        break;
+                    case 1:
+                        shapeRenderer.setColor(Color.BLUE);
+                        break;
+                    case -1:
+                        shapeRenderer.setColor(Color.GREEN);
+                        break;
+                    default:
+                        shapeRenderer.setColor(Color.RED);
+                        break;
+                }
+//                shapeRenderer.setColor(Color.WHITE);
+                shapeRenderer.circle(v.x, v.y, 0.2f);
+            }
+        }
+
     }
 
     private void proj(Vector3 uv) {
