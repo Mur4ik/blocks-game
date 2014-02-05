@@ -124,7 +124,9 @@ public class HexStage extends BaseStage {
 
         hexCoords3.drawHex(touch, shapeRenderer);
 
-        hexCoords3.drawHex(HexCoords3.round(touch.cpy()), shapeRenderer);
+//        hexCoords3.drawHex(HexCoords3.round(touch.cpy()), shapeRenderer);
+
+        hexCoords3.drawHex(HexCoords3.roundToHex(touch.cpy()), shapeRenderer);
 
         shapeRenderer.end();
 

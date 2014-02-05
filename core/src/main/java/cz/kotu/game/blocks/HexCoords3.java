@@ -9,6 +9,9 @@ import com.badlogic.gdx.math.Vector3;
 
 /**
  * Implementation of hex coordinates called "Cube coordinates".
+ * For coordinates in 0 z plane holds:
+ * <p/>
+ * x + y + z = 0
  * <p/>
  * http://keekerdc.com/2011/03/hexagon-grids-coordinate-systems-and-distance-calculations/
  * http://www.redblobgames.com/grids/hexagons/
@@ -176,9 +179,36 @@ public class HexCoords3 {
         return Math.max(Math.max(dir.x, dir.y), dir.z);
     }
 
-    // TODO there is better implementation of round that always returns center of hex - this does not
+
+    /**
+     * Rounds vector component-wise.
+     */
     public static Vector3 round(Vector3 round) {
         return round.set(MathUtils.round(round.x), MathUtils.round(round.y), MathUtils.round(round.z));
     }
+
+    /**
+     * Returns center of hex, provided v was in 0-z plane.
+     */
+    public static Vector3 roundToHex(Vector3 v) {
+        float rx = MathUtils.round(v.x);
+        float ry = MathUtils.round(v.y);
+        float rz = MathUtils.round(v.z);
+
+        float x_diff = Math.abs(rx - v.x);
+        float y_diff = Math.abs(ry - v.y);
+        float z_diff = Math.abs(rz - v.z);
+
+        if (x_diff > y_diff && x_diff > z_diff) {
+            rx = -ry - rz;
+        } else if (y_diff > z_diff) {
+            ry = -rx - rz;
+        } else {
+            rz = -rx - ry;
+        }
+
+        return v.set(rx, ry, rz);
+    }
+
 
 }
