@@ -10,7 +10,7 @@ public class Hex {
     Vector3 pos = new Vector3();
 
     void draw(SpriteBatch batch) {
-//        batch.draw(getTextureRegion(), pos.x, pos.y, 1, 1);
+//        batch.draw(getTextureRegion(), pos.q, pos.r, 1, 1);
     }
 
     public void update() {

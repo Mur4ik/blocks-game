@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
  * Implementation of hex coordinates called "Cube coordinates".
  * For coordinates in 0 z plane holds:
  * <p/>
- * x + y + z = 0
+ * q + r + z = 0
  * <p/>
  * http://keekerdc.com/2011/03/hexagon-grids-coordinate-systems-and-distance-calculations/
  * http://www.redblobgames.com/grids/hexagons/
@@ -22,14 +22,14 @@ public class HexCoords3 {
     static final float H3 = (float) 1;
 
     /**
-     * Matrix that projects cube hex coordinates into x, y orthogonal (graphic) plane coordinates.
+     * Matrix that projects cube hex coordinates into q, r orthogonal (graphic) plane coordinates.
      */
     final Matrix4 projection = new Matrix4();
 
     final Matrix4 projectionInverse = new Matrix4();
 
     /**
-     * Virtual cube vectors - each cube coordinate (x, y, z) is the factor of its appropriate base vector.
+     * Virtual cube vectors - each cube coordinate (q, r, z) is the factor of its appropriate base vector.
      */
     final Vector3 x;
     final Vector3 y;
@@ -64,7 +64,7 @@ public class HexCoords3 {
         return getHexVerts(1);
     }
 
-    Vector3[] getHexVerts(int size) {
+    Vector3[] getHexVerts(float size) {
 
         return new Vector3[]{
                 new Vector3(size, 0, 0),
@@ -78,12 +78,16 @@ public class HexCoords3 {
     }
 
     void drawHex(Vector3 origin, ShapeRenderer shapeRenderer) {
+        drawHex(origin, 1, shapeRenderer);
+    }
+
+    void drawHex(Vector3 origin, float size, ShapeRenderer shapeRenderer) {
 
         Vector3 o = new Vector3(origin);
 
         project(o);
 
-        Vector3[] verts = getHexVerts();
+        Vector3[] verts = getHexVerts(size);
 
         float[] polys = new float[verts.length * 2];
 
@@ -98,7 +102,13 @@ public class HexCoords3 {
             polys[2 * i + 1] = verts[i].y;
         }
 
-        shapeRenderer.polyline(polys);
+        shapeRenderer.polygon(polys);
+//        if (shapeRenderer.getCurrentType() == ShapeRenderer.ShapeType.Line) {
+//            shapeRenderer.polyline(polys);
+//        } else {
+//            shapeRenderer.polygon(polys);
+//        }
+
     }
 
     void drawHexGrid(ShapeRenderer shapeRenderer) {
@@ -141,20 +151,22 @@ public class HexCoords3 {
                         break;
                 }
 //                shapeRenderer.setColor(Color.WHITE);
+
                 shapeRenderer.circle(v.x, v.y, 0.2f);
+                drawHex(v, 0.2f, shapeRenderer);
             }
         }
 
     }
 
-    private void project(Vector3 uv) {
-        uv.mul(projection);
+    Vector3 project(Vector3 uv) {
+        return uv.mul(projection);
     }
 
-    void unproject(float screenx, float screeny, Vector3 outCube) {
+    Vector3 unproject(float screenx, float screeny, Vector3 outCube) {
         outCube.set(screenx, screeny, 0);
         // unproject
-        outCube.mul(projectionInverse);
+        return outCube.mul(projectionInverse);
     }
 
     float z(Vector2 vec) {
@@ -168,7 +180,7 @@ public class HexCoords3 {
     /**
      * @param u num of column to right
      * @param v num of right upwards diagonal to right
-     * @return vector in imaginary coordinates x, y, z
+     * @return vector in imaginary coordinates q, r, z
      */
     Vector2 toXyz(int u, int v) {
         return new Vector2(2 * u + v, 2 * v + u);
@@ -177,7 +189,7 @@ public class HexCoords3 {
     float distance(Vector2 v1, Vector2 v2) {
         Vector3 dir = new Vector3(v2.x - v1.x, v2.y - v1.y, z(v2) - z(v1));
         abs(dir);
-//        return Math.max(Math.max(dir.x, dir.y), dir.z);
+//        return Math.max(Math.max(dir.q, dir.r), dir.z);
         return (dir.x + dir.y + dir.z) / 2f;
     }
 
@@ -219,5 +231,17 @@ public class HexCoords3 {
         return v.set(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
     }
 
+    public Axial roundToAxial(Vector3 cube) {
+        cube = HexCoords3.roundToHex(cube);
+        return new Axial((int) cube.x, (int) cube.y);
+    }
+
+    Vector3 toCube(Axial axial) {
+        return new Vector3(axial.q, axial.r, -axial.q - axial.r);
+    }
+
+    Vector3 project(Axial axial) {
+        return project(toCube(axial));
+    }
 
 }

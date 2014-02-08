@@ -3,6 +3,7 @@ package cz.kotu.game.blocks;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -56,9 +57,9 @@ public class HelloApp extends ApplicationAdapter {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
-        batch.setProjectionMatrix(camera.combined);
-
         processInputs();
+
+        batch.setProjectionMatrix(camera.combined);
 
         stage.update();
 
@@ -91,6 +92,22 @@ public class HelloApp extends ApplicationAdapter {
             camera.unproject(touchPos);
             stage.pointerDown(touchPos.x, touchPos.y);
         }
+        float CAM_SPEED = 1;
+        float dx = 0;
+        float dy = 0;
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            dx -= Gdx.graphics.getDeltaTime() * CAM_SPEED;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            dx += Gdx.graphics.getDeltaTime() * CAM_SPEED;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            dy += Gdx.graphics.getDeltaTime() * CAM_SPEED;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            dy -= Gdx.graphics.getDeltaTime() * CAM_SPEED;
+        }
+        camera.translate(dx, dy);
     }
 
     class LocalInputProcessor extends InputAdapter {

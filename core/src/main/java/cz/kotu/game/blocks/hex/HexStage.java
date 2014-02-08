@@ -1,5 +1,6 @@
 package cz.kotu.game.blocks.hex;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -9,7 +10,9 @@ import cz.kotu.game.blocks.BaseStage;
 import cz.kotu.game.blocks.Draggable;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HexStage extends BaseStage {
@@ -25,6 +28,9 @@ public class HexStage extends BaseStage {
     ShapeRenderer shapeRenderer;
     private Vector3 touch = new Vector3();
 
+    final HexGrid grid = new HexGrid();
+
+    final List<HexGroup> groups = new ArrayList<HexGroup>();
 
     protected void init() {
         super.init();
@@ -40,10 +46,34 @@ public class HexStage extends BaseStage {
 //            hexes.add(block);
 //        }
 //        {
+
         follower = new Hex();
         hexes.add(follower);
         halfling = new Hex();
         hexes.add(halfling);
+
+        {
+            HexGroup group = new HexGroup();
+            final int ID = 1;
+            group.set(0, 0, ID);
+            group.set(1, 0, ID);
+            group.set(1, 1, ID);
+            group.move(new Axial(2, 1));
+            groups.add(group);
+
+        }
+
+        {
+            HexGroup group = new HexGroup();
+            final int ID = 2;
+            group.set(0, 0, ID);
+            group.set(1, 0, ID);
+            group.set(0, 1, ID);
+            group.set(-1, -1, ID);
+            groups.add(group);
+        }
+
+
 //        }
 //        {
 //            Slider slider = new Slider();
@@ -91,9 +121,9 @@ public class HexStage extends BaseStage {
 
         shapeRenderer.setColor(1, 1, 0, 1);
 
-//        shapeRenderer.line(x, y, x2, y2);
+//        shapeRenderer.line(q, r, x2, y2);
         shapeRenderer.rect(1, 1, 1, 1);
-//        shapeRenderer.circle(x, y, radius);
+//        shapeRenderer.circle(q, r, radius);
 
         shapeRenderer.end();
 
@@ -112,10 +142,20 @@ public class HexStage extends BaseStage {
 //        projection.drawHexGrid(this.shapeRenderer);
 //        hexCoords2.drawHexGrid(this.shapeRenderer);
 //        hexCoords3.drawHex(0, 0, shapeRenderer);
-        hexCoords3.drawHexGrid(this.shapeRenderer);
 
+//        hexCoords3.drawHexGrid(this.shapeRenderer);
+
+        drawHexGrid(shapeRenderer);
+
+        shapeRenderer.end();
+
+        for (HexGroup group : groups) {
+            group.drawHexGrid(hexCoords3, shapeRenderer);
+        }
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 //        shapeRenderer.rect(1, 1, 1, 1);
-//        shapeRenderer.circle(x, y, radius);
+//        shapeRenderer.circle(q, r, radius);
 
         shapeRenderer.setColor(1, 1, 1, 1);
 
@@ -134,14 +174,14 @@ public class HexStage extends BaseStage {
 //        for (LinPos p : grid.getLinGrid()) {
 //            final Square square = grid.get(p.i);
 //
-//            final int neighHash = GridUtils.getNeighHash(p, new Predicate<Pos>() {
+//            final int neighHash = GridUtils.getNeighHash(p, new Predicate<Axial>() {
 //                @Override
-//                public boolean evaluate(Pos pos) {
+//                public boolean evaluate(Axial pos) {
 //                    final Square nsquare = grid.get(pos);
 //                    if (nsquare == null) {
 //                        return false;
 //                    }
-////                    return (pos.x + pos.y) % 2 == 0;
+////                    return (pos.q + pos.r) % 2 == 0;
 //                    return nsquare.count > 0;
 //                }
 //            });
@@ -150,15 +190,15 @@ public class HexStage extends BaseStage {
 //
 //                final Sprite sprite = T.blockSprites[neighHash];
 //
-//                sprite.setPosition(p.x, p.y);
+//                sprite.setPosition(p.q, p.r);
 //
 //                sprite.draw(batch1);
 //            } else {
 //                int image = neighHash / 4;
 //
-////            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, MathUtils.random(8)* 45);
-////            batch.draw(blockTextureRegion.get(square.image), p.x, p.y, 0.5f, 0.5f, 1, 1, 1, 1, 45);
-//                batch1.draw(T.blockTextureRegion.get(image), p.x, p.y, 1, 1);
+////            batch.draw(blockTextureRegion.get(square.image), p.q, p.r, 0.5f, 0.5f, 1, 1, 1, 1, MathUtils.random(8)* 45);
+////            batch.draw(blockTextureRegion.get(square.image), p.q, p.r, 0.5f, 0.5f, 1, 1, 1, 1, 45);
+//                batch1.draw(T.blockTextureRegion.get(image), p.q, p.r, 1, 1);
 //
 //            }
 //        }
@@ -176,20 +216,20 @@ public class HexStage extends BaseStage {
 
 //        font.setScale();
         {
-            font.draw(batch, "x: " + decimalFormat.format(touch.x) +
-                    " y: " + decimalFormat.format(touch.y) +
+            font.draw(batch, "q: " + decimalFormat.format(touch.x) +
+                    " r: " + decimalFormat.format(touch.y) +
                     " z: " + decimalFormat.format(touch.z) +
                     " s: " + decimalFormat.format(touch.x + touch.y + touch.z), 0, 10 * 16);
         }
         {
-            font.draw(batch, "x: " + decimalFormat.format(follower.pos.x) +
-                    " y: " + decimalFormat.format(follower.pos.y) +
+            font.draw(batch, "q: " + decimalFormat.format(follower.pos.x) +
+                    " r: " + decimalFormat.format(follower.pos.y) +
                     " z: " + decimalFormat.format(follower.pos.z) +
                     " s: " + decimalFormat.format(follower.pos.x + follower.pos.y + follower.pos.z), 0, 9 * 16);
         }
         {
-            font.draw(batch, "x: " + decimalFormat.format(halfling.pos.x) +
-                    " y: " + decimalFormat.format(halfling.pos.y) +
+            font.draw(batch, "q: " + decimalFormat.format(halfling.pos.x) +
+                    " r: " + decimalFormat.format(halfling.pos.y) +
                     " z: " + decimalFormat.format(halfling.pos.z) +
                     " s: " + decimalFormat.format(halfling.pos.x + halfling.pos.y + halfling.pos.z), 0, 8 * 16);
         }
@@ -199,11 +239,70 @@ public class HexStage extends BaseStage {
 
     }
 
+
+    void drawHexGrid(ShapeRenderer shapeRenderer) {
+        int w = 6;
+        int h = 4;
+
+        for (int rd = 0; rd < h; rd++) {
+            for (int coli = 0; coli < w; coli++) {
+//                int c0 = 0;
+                int c0 = 0 - (int) rd / 2;
+                int col = c0 + coli;
+
+                Axial axial = new Axial(col, rd);
+
+                Integer v = (Integer) grid.get(axial);
+                int val = 0;
+                if (v != null) {
+                    val = v;
+                }
+
+                shapeRenderer.setColor(val % 5, val % 3, val % 2, 1);
+//                shapeRenderer.setColor(col % 2, rd % 2, (-col - rd) % 2, 1);
+//                drawHex(2 * col + rd, 2 * rd + col, shapeRenderer);
+//                drawHex(new Vector3(2 * col + rd, 2 * rd + col, 0), shapeRenderer);
+//                drawHex(new Vector3(-2 * col + rd, -2 * rd + col, 0), shapeRenderer);
+                hexCoords3.drawHex(hexCoords3.toCube(axial), 1f, shapeRenderer);
+                Vector3 project = hexCoords3.project(axial);
+
+//                drawHex(new Vector3(2 * col, 2 * rd, -2 * col - 2 * rd), shapeRenderer);
+            }
+        }
+
+        for (int r = 0; r < h * 2; r++) {
+            for (int q = 0; q < w * 2; q++) {
+                shapeRenderer.setColor(q % 2, r % 2, (-q - r) % 2, 1);
+                Vector3 v = new Vector3(q, r, 0);
+                hexCoords3.project(v);
+                int s = (int) v.x + (int) v.y + (int) v.z;
+                switch (s % 2) {
+                    case 0:
+                        shapeRenderer.setColor(Color.WHITE);
+                        break;
+                    case 1:
+                        shapeRenderer.setColor(Color.BLUE);
+                        break;
+                    case -1:
+                        shapeRenderer.setColor(Color.GREEN);
+                        break;
+                    default:
+                        shapeRenderer.setColor(Color.RED);
+                        break;
+                }
+//                shapeRenderer.setColor(Color.WHITE);
+                shapeRenderer.circle(v.x, v.y, 0.2f);
+            }
+        }
+
+    }
+
+
     public void pointerDown(float x1, float y1) {
-//        final int x = MathUtils.floor(x1);
-//        final int y = MathUtils.floor(y1);
-//        follower.target.set(x, y);
-//        final Square square = grid.get(x, y);
+//        final int q = MathUtils.floor(x1);
+//        final int r = MathUtils.floor(y1);
+//        follower.target.set(q, r);
+//        final Square square = grid.get(q, r);
 //        if (square != null) {
 //            square.count++;
 //        }
@@ -219,7 +318,7 @@ public class HexStage extends BaseStage {
             if (draggable.onPressed(x, y)) {
 //                final Vector2 v = new Vector2();
 //                draggable.getRect().getCenter(v);
-//                v.sub(x, y);
+//                v.sub(q, r);
 //                draggable.target.add(v);
                 draggedMap.put(pointer, draggable);
             }
@@ -241,13 +340,23 @@ public class HexStage extends BaseStage {
                 draggedMap.remove(pointer);
             }
         }
+
+        Vector3 unproject = hexCoords3.unproject(x, y, new Vector3());
+        Axial axial = hexCoords3.roundToAxial(unproject);
+        Object v = grid.get(axial);
+        int val = 0;
+        if (v != null) {
+            val = (Integer) v;
+        }
+        grid.set(axial, val + 1);
+
         return true;
     }
 
     @Override
     public boolean keyTyped(char character) {
 
-        // follower goes by tiles
+        // follower goes by map
         switch (character) {
             case 'd':
                 follower.pos.x++;
@@ -269,7 +378,7 @@ public class HexStage extends BaseStage {
                 follower.pos.z++;
                 follower.pos.y--;
                 break;
-            case 'x':
+            case 'q':
                 follower.pos.x++;
                 follower.pos.y--;
                 break;
@@ -295,8 +404,8 @@ public class HexStage extends BaseStage {
 //                if (sign >= 0) {
 //                    halfling.pos.z--;
 //                } else {
-//                    halfling.pos.x++;
-//                    halfling.pos.y++;
+//                    halfling.pos.q++;
+//                    halfling.pos.r++;
 //                }
                 break;
             case 'j':
