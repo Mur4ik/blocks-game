@@ -67,5 +67,9 @@ public class HexGroup<T> extends HexGrid<T> {
         map.putAll(temp);
     }
 
+    boolean intersects(HexCoords3 coords3, Vector3 cube) {
+        Axial pick = coords3.roundToAxial(cube);
+        return map.keySet().contains(pick);
+    }
 
 }

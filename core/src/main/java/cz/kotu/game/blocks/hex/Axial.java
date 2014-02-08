@@ -8,6 +8,9 @@ public class Axial {
     public int r; // == y
     // x + y + z = 0
 
+    public Axial() {
+    }
+
     public Axial(int q, int r) {
         this.q = q;
         this.r = r;
@@ -46,7 +49,7 @@ public class Axial {
     }
 
     public Axial add(Axial dir) {
-        this.q = +dir.q;
+        this.q += dir.q;
         this.r += dir.r;
         return this;
     }

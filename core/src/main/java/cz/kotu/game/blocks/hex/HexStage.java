@@ -10,10 +10,7 @@ import cz.kotu.game.blocks.BaseStage;
 import cz.kotu.game.blocks.Draggable;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class HexStage extends BaseStage {
 
@@ -31,6 +28,8 @@ public class HexStage extends BaseStage {
     final HexGrid grid = new HexGrid();
 
     final List<HexGroup> groups = new ArrayList<HexGroup>();
+
+    final Set<HexGroup> selectedGroups = new HashSet<HexGroup>();
 
     protected void init() {
         super.init();
@@ -314,7 +313,13 @@ public class HexStage extends BaseStage {
     final Map<Integer, Draggable> draggedMap = new HashMap<Integer, Draggable>();
 
     public boolean touchDown(float x, float y, int pointer, int button) {
+        for (HexGroup group : groups) {
+            if (group.intersects(hexCoords3, hexCoords3.unproject(x, y, new Vector3()))) {
+                selectedGroups.add(group);
+            }
+        }
         for (Draggable draggable : getHexsOfType(Draggable.class)) {
+
             if (draggable.onPressed(x, y)) {
 //                final Vector2 v = new Vector2();
 //                draggable.getRect().getCenter(v);
@@ -356,67 +361,76 @@ public class HexStage extends BaseStage {
     @Override
     public boolean keyTyped(char character) {
 
+        Vector3 vector1 = new Vector3();
+        Axial dir3 = new Axial();
+
         // follower goes by map
         switch (character) {
             case 'd':
-                follower.pos.x++;
-                follower.pos.z--;
+                vector1.x++;
+                vector1.z--;
                 break;
             case 'e':
-                follower.pos.y++;
-                follower.pos.z--;
+                vector1.y++;
+                vector1.z--;
                 break;
             case 'w':
-                follower.pos.y++;
-                follower.pos.x--;
+                vector1.y++;
+                vector1.x--;
                 break;
             case 'a':
-                follower.pos.z++;
-                follower.pos.x--;
+                vector1.z++;
+                vector1.x--;
                 break;
             case 'z':
-                follower.pos.z++;
-                follower.pos.y--;
+                vector1.z++;
+                vector1.y--;
                 break;
             case 'q':
-                follower.pos.x++;
-                follower.pos.y--;
+                vector1.x++;
+                vector1.y--;
                 break;
         }
 
-        float sign = halfling.pos.x + halfling.pos.y + halfling.pos.z;
+        follower.pos.add(vector1);
+
+        Vector3 vector2 = new Vector3();
 
         switch (character) {
             case 'u':
-                halfling.pos.x--;
+                // x--;
+                vector2.set(-2, 1, 1);
                 break;
             case 'i':
-                halfling.pos.y++;
+                // y--;
+                vector2.set(-1, 2, -1);
                 break;
             case 'o':
-//                halfling.pos.z--;
-//                halfling.pos.z--;
-
-                halfling.pos.z -= 0.66;
-                halfling.pos.x += 0.33;
-                halfling.pos.y += 0.33;
-
-//                if (sign >= 0) {
-//                    halfling.pos.z--;
-//                } else {
-//                    halfling.pos.q++;
-//                    halfling.pos.r++;
-//                }
+                // z --
+                vector2.set(1, 1, -2);
                 break;
             case 'j':
-                halfling.pos.z++;
+                // z++;
+                vector2.set(-1, -1, 2);
                 break;
             case 'k':
-                halfling.pos.y--;
+                // y--;
+                vector2.set(1, -2, 1);
                 break;
             case 'l':
-                halfling.pos.x++;
+                // x++;
+                vector2.set(2, -1, -1);
                 break;
+        }
+
+        halfling.pos.add(vector2);
+
+        Axial dir1 = hexCoords3.roundToAxial(vector1);
+        Axial dir2 = hexCoords3.roundToAxial(vector2);
+
+        for (HexGroup selectedGroup : selectedGroups) {
+            selectedGroup.move(dir1);
+            selectedGroup.move(dir2);
         }
 
         return super.keyTyped(character);
