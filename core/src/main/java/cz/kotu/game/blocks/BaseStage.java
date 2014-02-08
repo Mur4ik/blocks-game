@@ -6,19 +6,19 @@ import com.badlogic.gdx.math.Matrix4;
 
 public class BaseStage {
 
-    final SpriteBatch batch = new SpriteBatch();
+    protected final SpriteBatch batch = new SpriteBatch();
 
-    final BitmapFont font = new BitmapFont();
+    protected final BitmapFont font = new BitmapFont();
 
-    void init() {
-
-    }
-
-    void update() {
+    protected void init() {
 
     }
 
-    void draw(Matrix4 combined) {
+    protected void update() {
+
+    }
+
+    protected void draw(Matrix4 combined) {
 
     }
 

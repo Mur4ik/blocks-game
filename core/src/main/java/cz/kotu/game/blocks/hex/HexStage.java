@@ -1,11 +1,12 @@
-package cz.kotu.game.blocks;
+package cz.kotu.game.blocks.hex;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
+import cz.kotu.game.blocks.BaseStage;
+import cz.kotu.game.blocks.Draggable;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class HexStage extends BaseStage {
     private Vector3 touch = new Vector3();
 
 
-    void init() {
+    protected void init() {
         super.init();
 
         // populate grid
@@ -62,7 +63,7 @@ public class HexStage extends BaseStage {
 
     }
 
-    void update() {
+    protected void update() {
 
         for (Hex block : hexes) {
             block.update();
@@ -71,7 +72,7 @@ public class HexStage extends BaseStage {
 
     }
 
-    private <T extends Hex> Iterable<T> getHexsOfType(final Class<T> clss) {
+    private <T> Iterable<T> getHexsOfType(final Class<T> clss) {
         Predicate<Hex> instanceOfPredicate = new Predicate<Hex>() {
             @Override
             public boolean evaluate(Hex block) {
@@ -81,7 +82,7 @@ public class HexStage extends BaseStage {
         return (Iterable<T>) new Predicate.PredicateIterable<Hex>(hexes, instanceOfPredicate);
     }
 
-    void draw(Matrix4 combined) {
+    protected void draw(Matrix4 combined) {
 //        batch1.getProjectionMatrix();
 
         shapeRenderer.setProjectionMatrix(combined);
@@ -208,18 +209,21 @@ public class HexStage extends BaseStage {
 //        }
     }
 
-    final Map<Integer, Slider> draggedMap = new HashMap<Integer, Slider>();
+    /**
+     * pointerId -> current Draggable
+     */
+    final Map<Integer, Draggable> draggedMap = new HashMap<Integer, Draggable>();
 
     public boolean touchDown(float x, float y, int pointer, int button) {
-//        for (Slider slider : getHexsOfType(Slider.class)) {
-//            if (slider.getRect().contains(x, y)) {
-////                final Vector2 v = new Vector2();
-////                slider.getRect().getCenter(v);
-////                v.sub(x, y);
-////                slider.target.add(v);
-//                draggedMap.put(pointer, slider);
-//            }
-//        }
+        for (Draggable draggable : getHexsOfType(Draggable.class)) {
+            if (draggable.onPressed(x, y)) {
+//                final Vector2 v = new Vector2();
+//                draggable.getRect().getCenter(v);
+//                v.sub(x, y);
+//                draggable.target.add(v);
+                draggedMap.put(pointer, draggable);
+            }
+        }
         return true;
     }
 
@@ -230,13 +234,12 @@ public class HexStage extends BaseStage {
     }
 
     public boolean touchUp(float x, float y, int pointer, int button) {
-        final Slider slider = draggedMap.get(pointer);
+        final Draggable draggable = draggedMap.get(pointer);
 
-        if (slider != null) {
-            final int fx = MathUtils.floor(x);
-            final int fy = MathUtils.floor(y);
-            slider.target.set(fx, fy);
-            draggedMap.remove(pointer);
+        if (draggable != null) {
+            if (draggable.onReleased(x, y)) {
+                draggedMap.remove(pointer);
+            }
         }
         return true;
     }

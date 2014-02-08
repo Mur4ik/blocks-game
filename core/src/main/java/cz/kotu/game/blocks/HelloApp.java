@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import cz.kotu.game.blocks.hex.HexStage;
 
 
 public class HelloApp extends ApplicationAdapter {

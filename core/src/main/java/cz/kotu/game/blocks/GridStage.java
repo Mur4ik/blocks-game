@@ -19,7 +19,7 @@ public class GridStage extends BaseStage {
     GenericGrid<Square> grid = new GenericGrid<Square>(new LinearGrid(12, 8));
     private Follower follower;
 
-    void init() {
+    protected void init() {
         super.init();
 
         // populate grid
@@ -55,7 +55,7 @@ public class GridStage extends BaseStage {
 
     }
 
-    void update() {
+    protected void update() {
 
         for (Block block : blocks) {
             block.update();
@@ -74,7 +74,7 @@ public class GridStage extends BaseStage {
         return (Iterable<T>) new Predicate.PredicateIterable<Block>(blocks, instanceOfPredicate);
     }
 
-    void draw(Matrix4 combined) {
+    protected void draw(Matrix4 combined) {
         batch.setProjectionMatrix(combined);
 
         batch.begin();

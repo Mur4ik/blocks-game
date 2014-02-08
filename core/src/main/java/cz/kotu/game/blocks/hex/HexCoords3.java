@@ -1,4 +1,4 @@
-package cz.kotu.game.blocks;
+package cz.kotu.game.blocks.hex;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -176,7 +176,9 @@ public class HexCoords3 {
 
     float distance(Vector2 v1, Vector2 v2) {
         Vector3 dir = new Vector3(v2.x - v1.x, v2.y - v1.y, z(v2) - z(v1));
-        return Math.max(Math.max(dir.x, dir.y), dir.z);
+        abs(dir);
+//        return Math.max(Math.max(dir.x, dir.y), dir.z);
+        return (dir.x + dir.y + dir.z) / 2f;
     }
 
 
@@ -208,6 +210,13 @@ public class HexCoords3 {
         }
 
         return v.set(rx, ry, rz);
+    }
+
+    /**
+     * Abs vector component-wise.
+     */
+    public static Vector3 abs(Vector3 v) {
+        return v.set(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
     }
 
 
