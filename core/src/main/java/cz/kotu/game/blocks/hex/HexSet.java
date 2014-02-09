@@ -44,6 +44,17 @@ public class HexSet extends HashSet<Hex> {
         return false;
     }
 
+    boolean intersects(HexSet other) {
+        for (Hex hext : this) {
+            for (Hex hexo : other) {
+                if (hext.intersects(hexo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     HexSet intersection(HexSet other) {
         // TODO this is complicated with float coordinates
         HexSet intersection = new HexSet();

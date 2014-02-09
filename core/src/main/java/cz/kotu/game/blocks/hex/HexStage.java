@@ -394,7 +394,7 @@ public class HexStage extends BaseStage {
                 vector1.z++;
                 vector1.y--;
                 break;
-            case 'q':
+            case 'x':
                 vector1.x++;
                 vector1.y--;
                 break;
@@ -439,6 +439,21 @@ public class HexStage extends BaseStage {
         for (HexSet selectedGroup : selectedGroups) {
             selectedGroup.move(vector1);
             selectedGroup.move(vector2);
+            for (HexSet group : groups) {
+                if (group == selectedGroup) {
+                    // skip checking self
+                    continue;
+                }
+                if (selectedGroups.contains(group)) {
+                    // skip all selected group - they move together
+                    continue;
+                }
+                if (selectedGroup.intersects(group)) {
+                    // rollback
+                    selectedGroup.move(vector1.scl(-1));
+                    selectedGroup.move(vector2.scl(-1));
+                }
+            }
         }
 
         return super.keyTyped(character);

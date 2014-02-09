@@ -25,7 +25,8 @@ public class Hex {
     }
 
     boolean intersects(Hex other) {
-        return this.centerDistance(other) <= this.size + other.size;
+        // from how the size is currently calculated - need to scale
+        return this.centerDistance(other) <= (this.size + other.size) / 2f;
     }
 
     void draw(SpriteBatch batch) {
@@ -37,7 +38,8 @@ public class Hex {
     }
 
     public boolean contains(Vector3 cube) {
-        return centerDistance(cube) <= size;
+        // from how the size is currently calculated - need to scale
+        return centerDistance(cube) <= size / 2f;
     }
 
 }
