@@ -27,9 +27,9 @@ public class HexStage extends BaseStage {
 
     final HexGrid grid = new HexGrid();
 
-    final List<HexGroup> groups = new ArrayList<HexGroup>();
+    final List<HexSet> groups = new ArrayList<HexSet>();
 
-    final Set<HexGroup> selectedGroups = new HashSet<HexGroup>();
+    final Set<HexSet> selectedGroups = new HashSet<HexSet>();
 
     protected void init() {
         super.init();
@@ -51,24 +51,45 @@ public class HexStage extends BaseStage {
         halfling = new Hex();
         hexes.add(halfling);
 
+//        {
+//            HexGroup group = new HexGroup();
+//            final int ID = 1;
+//            group.set(0, 0, ID);
+//            group.set(1, 0, ID);
+//            group.set(1, 1, ID);
+//            group.move(new Axial(2, 1));
+//            groups.add(group);
+//
+//        }
+//
+//        {
+//            HexGroup group = new HexGroup();
+//            final int ID = 2;
+//            group.set(0, 0, ID);
+//            group.set(1, 0, ID);
+//            group.set(0, 1, ID);
+//            group.set(-1, -1, ID);
+//            groups.add(group);
+//        }
+
         {
-            HexGroup group = new HexGroup();
-            final int ID = 1;
-            group.set(0, 0, ID);
-            group.set(1, 0, ID);
-            group.set(1, 1, ID);
-            group.move(new Axial(2, 1));
+            HexSet group = new HexSet();
+            group.color = Color.GREEN;
+            group.addHex(0, 0);
+            group.addHex(1, 0);
+            group.addHex(1, 1);
+            group.move(HexCoords3.toCube(new Axial(2, 1)));
             groups.add(group);
 
         }
 
         {
-            HexGroup group = new HexGroup();
-            final int ID = 2;
-            group.set(0, 0, ID);
-            group.set(1, 0, ID);
-            group.set(0, 1, ID);
-            group.set(-1, -1, ID);
+            HexSet group = new HexSet();
+            group.color = Color.BLUE;
+            group.addHex(0, 0);
+            group.addHex(1, 0);
+            group.addHex(0, 1);
+            group.addHex(-1, -1);
             groups.add(group);
         }
 
@@ -148,7 +169,7 @@ public class HexStage extends BaseStage {
 
         shapeRenderer.end();
 
-        for (HexGroup group : groups) {
+        for (HexSet group : groups) {
             group.drawHexGrid(hexCoords3, shapeRenderer);
         }
 
@@ -158,9 +179,9 @@ public class HexStage extends BaseStage {
 
         shapeRenderer.setColor(1, 1, 1, 1);
 
-        hexCoords3.drawHex(follower.pos, shapeRenderer);
+        hexCoords3.drawHex(follower.center, shapeRenderer);
 
-        hexCoords3.drawHex(halfling.pos, shapeRenderer);
+        hexCoords3.drawHex(halfling.center, shapeRenderer);
 
         hexCoords3.drawHex(touch, shapeRenderer);
 
@@ -221,16 +242,16 @@ public class HexStage extends BaseStage {
                     " s: " + decimalFormat.format(touch.x + touch.y + touch.z), 0, 10 * 16);
         }
         {
-            font.draw(batch, "q: " + decimalFormat.format(follower.pos.x) +
-                    " r: " + decimalFormat.format(follower.pos.y) +
-                    " z: " + decimalFormat.format(follower.pos.z) +
-                    " s: " + decimalFormat.format(follower.pos.x + follower.pos.y + follower.pos.z), 0, 9 * 16);
+            font.draw(batch, "q: " + decimalFormat.format(follower.center.x) +
+                    " r: " + decimalFormat.format(follower.center.y) +
+                    " z: " + decimalFormat.format(follower.center.z) +
+                    " s: " + decimalFormat.format(follower.center.x + follower.center.y + follower.center.z), 0, 9 * 16);
         }
         {
-            font.draw(batch, "q: " + decimalFormat.format(halfling.pos.x) +
-                    " r: " + decimalFormat.format(halfling.pos.y) +
-                    " z: " + decimalFormat.format(halfling.pos.z) +
-                    " s: " + decimalFormat.format(halfling.pos.x + halfling.pos.y + halfling.pos.z), 0, 8 * 16);
+            font.draw(batch, "q: " + decimalFormat.format(halfling.center.x) +
+                    " r: " + decimalFormat.format(halfling.center.y) +
+                    " z: " + decimalFormat.format(halfling.center.z) +
+                    " s: " + decimalFormat.format(halfling.center.x + halfling.center.y + halfling.center.z), 0, 8 * 16);
         }
 
 
@@ -269,27 +290,13 @@ public class HexStage extends BaseStage {
             }
         }
 
+        shapeRenderer.setColor(Color.BLACK);
+
         for (int r = 0; r < h * 2; r++) {
             for (int q = 0; q < w * 2; q++) {
                 shapeRenderer.setColor(q % 2, r % 2, (-q - r) % 2, 1);
                 Vector3 v = new Vector3(q, r, 0);
                 hexCoords3.project(v);
-                int s = (int) v.x + (int) v.y + (int) v.z;
-                switch (s % 2) {
-                    case 0:
-                        shapeRenderer.setColor(Color.WHITE);
-                        break;
-                    case 1:
-                        shapeRenderer.setColor(Color.BLUE);
-                        break;
-                    case -1:
-                        shapeRenderer.setColor(Color.GREEN);
-                        break;
-                    default:
-                        shapeRenderer.setColor(Color.RED);
-                        break;
-                }
-//                shapeRenderer.setColor(Color.WHITE);
                 shapeRenderer.circle(v.x, v.y, 0.2f);
             }
         }
@@ -313,8 +320,9 @@ public class HexStage extends BaseStage {
     final Map<Integer, Draggable> draggedMap = new HashMap<Integer, Draggable>();
 
     public boolean touchDown(float x, float y, int pointer, int button) {
-        for (HexGroup group : groups) {
-            if (group.intersects(hexCoords3, hexCoords3.unproject(x, y, new Vector3()))) {
+        for (HexSet group : groups) {
+            Vector3 unproject = hexCoords3.unproject(x, y, new Vector3());
+            if (group.intersects(hexCoords3, unproject)) {
                 selectedGroups.add(group);
             }
         }
@@ -392,45 +400,45 @@ public class HexStage extends BaseStage {
                 break;
         }
 
-        follower.pos.add(vector1);
+        follower.center.add(vector1);
 
         Vector3 vector2 = new Vector3();
 
         switch (character) {
             case 'u':
                 // x--;
-                vector2.set(-2, 1, 1);
+                vector2.set(-2, 1, 1).scl(1 / 3f);
                 break;
             case 'i':
-                // y--;
-                vector2.set(-1, 2, -1);
+                // y++;
+                vector2.set(-1, 2, -1).scl(1 / 3f);
                 break;
             case 'o':
                 // z --
-                vector2.set(1, 1, -2);
+                vector2.set(1, 1, -2).scl(1 / 3f);
                 break;
             case 'j':
                 // z++;
-                vector2.set(-1, -1, 2);
+                vector2.set(-1, -1, 2).scl(1 / 3f);
                 break;
             case 'k':
                 // y--;
-                vector2.set(1, -2, 1);
+                vector2.set(1, -2, 1).scl(1 / 3f);
                 break;
             case 'l':
                 // x++;
-                vector2.set(2, -1, -1);
+                vector2.set(2, -1, -1).scl(1 / 3f);
                 break;
         }
 
-        halfling.pos.add(vector2);
+        halfling.center.add(vector2);
 
-        Axial dir1 = hexCoords3.roundToAxial(vector1);
-        Axial dir2 = hexCoords3.roundToAxial(vector2);
+//        Axial dir1 = hexCoords3.roundToAxial(vector1);
+//        Axial dir2 = hexCoords3.roundToAxial(vector2);
 
-        for (HexGroup selectedGroup : selectedGroups) {
-            selectedGroup.move(dir1);
-            selectedGroup.move(dir2);
+        for (HexSet selectedGroup : selectedGroups) {
+            selectedGroup.move(vector1);
+            selectedGroup.move(vector2);
         }
 
         return super.keyTyped(character);

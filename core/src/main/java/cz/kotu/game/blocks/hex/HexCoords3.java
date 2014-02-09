@@ -77,6 +77,10 @@ public class HexCoords3 {
 
     }
 
+    void drawHex(Hex hex, ShapeRenderer shapeRenderer) {
+        drawHex(hex.center, hex.size, shapeRenderer);
+    }
+
     void drawHex(Vector3 origin, ShapeRenderer shapeRenderer) {
         drawHex(origin, 1, shapeRenderer);
     }
@@ -193,7 +197,6 @@ public class HexCoords3 {
         return (dir.x + dir.y + dir.z) / 2f;
     }
 
-
     /**
      * Rounds vector component-wise.
      */
@@ -236,8 +239,12 @@ public class HexCoords3 {
         return new Axial((int) cube.x, (int) cube.y);
     }
 
-    Vector3 toCube(Axial axial) {
-        return new Vector3(axial.q, axial.r, -axial.q - axial.r);
+    static Vector3 toCube(Axial axial) {
+        return setCubeFromAxial(new Vector3(), axial);
+    }
+
+    static Vector3 setCubeFromAxial(Vector3 vector3, Axial axial) {
+        return vector3.set(axial.q, axial.r, -axial.q - axial.r);
     }
 
     Vector3 project(Axial axial) {

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,6 +71,12 @@ public class HexGroup<T> extends HexGrid<T> {
     boolean intersects(HexCoords3 coords3, Vector3 cube) {
         Axial pick = coords3.roundToAxial(cube);
         return map.keySet().contains(pick);
+    }
+
+    Set<Axial> intersection(HexGroup<T> other) {
+        HashSet<Axial> intersection = new HashSet<Axial>(this.map.keySet());
+        intersection.retainAll(other.map.keySet());
+        return intersection;
     }
 
 }
