@@ -65,7 +65,7 @@ public class HexSet extends HashSet<Hex> {
 
     Hex addHex(int q, int r) {
         Hex hex = new Hex();
-        hex.size = 0.95f;
+        hex.size = 0.9f;
         hex.setCenterAxial(q, r);
         add(hex);
         return hex;
