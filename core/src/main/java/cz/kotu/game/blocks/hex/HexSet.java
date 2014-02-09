@@ -37,6 +37,15 @@ public class HexSet extends HashSet<Hex> {
 
     }
 
+    Hex getHex(Vector3 cube) {
+        for (Hex hex : this) {
+            if (hex.contains(cube)) {
+                return hex;
+            }
+        }
+        return null;
+    }
+
     boolean intersects(HexCoords3 coords3, Vector3 cube) {
         for (Hex hex : this) {
             if (hex.contains(cube)) return true;

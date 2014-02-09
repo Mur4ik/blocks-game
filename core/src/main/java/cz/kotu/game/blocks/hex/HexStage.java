@@ -108,7 +108,7 @@ public class HexStage extends BaseStage {
             group.addHex(0, 0);
             group.addHex(1, 0);
             group.addHex(1, 1);
-            group.move(HexCoords3.toCube(new Axial(2, 1)));
+            group.move(HexCoords3.toCube(new Axial(1, 1)));
             groups.add(group);
 
         }
@@ -134,9 +134,12 @@ public class HexStage extends BaseStage {
         {
             HexSet group = new HexSet();
             group.color = Color.ORANGE;
-            for (Axial axial : axialBorderInDistance(new Axial(0, 5), 5)) {
+            for (Axial axial : axialBorderInDistance(new Axial(0, 3), 3)) {
                 group.addHex(axial);
             }
+            // TODO implement equals of Hex using Axial with Axial - Hex.center.toAxial
+            group.remove(group.getHex(HexCoords3.toCube(new Axial(3, 1))));
+            group.remove(group.getHex(HexCoords3.toCube(new Axial(3, 2))));
             groups.add(group);
         }
 
