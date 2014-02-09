@@ -1,6 +1,8 @@
 package cz.kotu.game.blocks.hex;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -8,6 +10,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Predicate;
 import cz.kotu.game.blocks.BaseStage;
 import cz.kotu.game.blocks.Draggable;
+import cz.kotu.game.blocks.T;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -28,6 +31,8 @@ public class HexStage extends BaseStage {
     final List<HexSet> groups = new ArrayList<HexSet>();
 
     final Set<HexSet> selectedGroups = new HashSet<HexSet>();
+
+    HexSet editedGroup;
 
     protected void init() {
         super.init();
@@ -68,27 +73,14 @@ public class HexStage extends BaseStage {
 //            groups.add(group);
 //        }
 
-        {
-            HexSet group = new HexSet();
-            group.color = Color.GREEN;
-            group.addHex(0, 0);
-            group.addHex(1, 0);
-            group.addHex(1, 1);
-            group.move(HexCoords3.toCube(new Axial(2, 1)));
-            groups.add(group);
-
-        }
+        initLevel1();
 
         {
             HexSet group = new HexSet();
-            group.color = Color.BLUE;
-            group.addHex(0, 0);
-            group.addHex(1, 0);
-            group.addHex(0, 1);
-            group.addHex(-1, -1);
+            group.color = Color.PINK;
+            editedGroup = group;
             groups.add(group);
         }
-
 
 //        }
 //        {
@@ -107,6 +99,71 @@ public class HexStage extends BaseStage {
 //            hexes.add(slider);
 //        }
 
+    }
+
+    private void initLevel1() {
+        {
+            HexSet group = new HexSet();
+            group.color = Color.GREEN;
+            group.addHex(0, 0);
+            group.addHex(1, 0);
+            group.addHex(1, 1);
+            group.move(HexCoords3.toCube(new Axial(2, 1)));
+            groups.add(group);
+
+        }
+
+        {
+            HexSet group = new HexSet();
+            group.color = Color.BLUE;
+            group.addHex(0, 0);
+            group.addHex(1, 0);
+            group.addHex(0, 1);
+            group.addHex(-1, -1);
+            group.move(HexCoords3.toCube(new Axial(0, 3)));
+            groups.add(group);
+        }
+        {
+//            HexSet group = new HexSet();
+//            group.color = Color.CYAN;
+//            for (Axial axial : axialAreaInDistance(new Axial(0, 5), 5)) {
+//                group.addHex(axial);
+//            }
+//            groups.add(group);
+        }
+        {
+            HexSet group = new HexSet();
+            group.color = Color.ORANGE;
+            for (Axial axial : axialBorderInDistance(new Axial(0, 5), 5)) {
+                group.addHex(axial);
+            }
+            groups.add(group);
+        }
+
+    }
+
+    List<Axial> axialAreaInDistance(Axial center, int N) {
+        List<Axial> area = new ArrayList<Axial>();
+        for (int dx = -N; dx <= N; dx++) {
+            for (int dy = Math.max(-N, -dx - N); dy <= Math.min(N, -dx + N); dy++) {
+                int dz = -dx - dy;
+                Axial axial = new Axial().setCube(dx, dy, dz).add(center);
+                area.add(axial);
+            }
+        }
+        return area;
+    }
+
+    List<Axial> axialBorderInDistance(Axial center, int N) {
+        List<Axial> border = axialAreaInDistance(center, N);
+        for (Iterator<Axial> iterator = border.iterator(); iterator.hasNext(); ) {
+            Axial axial = iterator.next();
+            // remove all hexes that are not on border
+            if (axial.distance(center) != N) {
+                iterator.remove();
+            }
+        }
+        return border;
     }
 
     protected void update() {
@@ -196,6 +253,16 @@ public class HexStage extends BaseStage {
 
         shapeRenderer.end();
 
+        batch.setProjectionMatrix(combined.cpy());
+
+        batch.begin();
+
+        batch.setColor(Color.ORANGE);
+
+        drawHexFull(new Vector3(), 1, batch);
+
+        batch.end();
+
 //        for (LinPos p : grid.getLinGrid()) {
 //            final Square square = grid.get(p.i);
 //
@@ -256,6 +323,15 @@ public class HexStage extends BaseStage {
 
     }
 
+    void drawHexFull(Vector3 origin, float size, SpriteBatch batch) {
+
+        Vector3 o = new Vector3(origin);
+
+        hexCoords3.project(o);
+
+        batch.draw(T.hexTexture1, o.x - size * 56 / 64, o.y - 1 * size, 2 * size * 56 / 64, 2 * size);
+
+    }
 
     void drawHexGrid(ShapeRenderer shapeRenderer) {
         int w = 6;
@@ -321,8 +397,22 @@ public class HexStage extends BaseStage {
     final Map<Integer, Draggable> draggedMap = new HashMap<Integer, Draggable>();
 
     public boolean touchDown(float x, float y, int pointer, int button) {
+        // unproject in cube coords
         Vector3 unproject = hexCoords3.unproject(x, y, new Vector3());
-        pick(unproject);
+        // round keyboard cursor to mouse position
+        cursor.center.set(unproject);
+        HexCoords3.roundToHex(cursor.center);
+
+        if (button == Input.Buttons.LEFT) {
+            pick(unproject);
+        }
+
+        if (button == Input.Buttons.RIGHT) {
+            if (editedGroup != null) {
+                editedGroup.addHex(HexCoords3.roundToAxial(unproject));
+            }
+        }
+
         for (Draggable draggable : getHexsOfType(Draggable.class)) {
 
             if (draggable.onPressed(x, y)) {

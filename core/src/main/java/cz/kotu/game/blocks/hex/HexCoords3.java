@@ -234,7 +234,7 @@ public class HexCoords3 {
         return v.set(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
     }
 
-    public Axial roundToAxial(Vector3 cube) {
+    public static Axial roundToAxial(Vector3 cube) {
         cube = HexCoords3.roundToHex(cube);
         return new Axial((int) cube.x, (int) cube.y);
     }
@@ -245,6 +245,10 @@ public class HexCoords3 {
 
     static Vector3 setCubeFromAxial(Vector3 vector3, Axial axial) {
         return vector3.set(axial.q, axial.r, -axial.q - axial.r);
+    }
+
+    static Axial setAxialFromCube(Axial axial, int x, int y, int z) {
+        return axial.setCube(x, y, z);
     }
 
     Vector3 project(Axial axial) {

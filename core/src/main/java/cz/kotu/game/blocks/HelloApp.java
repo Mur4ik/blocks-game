@@ -108,6 +108,12 @@ public class HelloApp extends ApplicationAdapter {
             dy -= Gdx.graphics.getDeltaTime() * CAM_SPEED;
         }
         camera.translate(dx, dy);
+        if (Gdx.input.isKeyPressed(Input.Keys.PAGE_UP)) {
+            camera.zoom *= Math.pow(2, Gdx.graphics.getDeltaTime());
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN)) {
+            camera.zoom /= Math.pow(2, Gdx.graphics.getDeltaTime());
+        }
     }
 
     class LocalInputProcessor extends InputAdapter {

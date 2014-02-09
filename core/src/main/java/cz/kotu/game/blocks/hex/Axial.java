@@ -12,8 +12,7 @@ public class Axial {
     }
 
     public Axial(int q, int r) {
-        this.q = q;
-        this.r = r;
+        setAxial(q, r);
     }
 
     @Override
@@ -48,10 +47,42 @@ public class Axial {
         return "Axial(" + q + "," + r + ")";
     }
 
+    public Axial setAxial(Axial axial) {
+        return setAxial(axial.q, axial.r);
+    }
+
+    public Axial setAxial(int q, int r) {
+        this.q = q;
+        this.r = r;
+        return this;
+    }
+
+    public Axial setCube(int x, int y, int z) {
+        this.q = x;
+        this.r = z;
+        return this;
+    }
+
     public Axial add(Axial dir) {
         this.q += dir.q;
         this.r += dir.r;
         return this;
+    }
+
+    int x() {
+        return q;
+    }
+
+    int y() {
+        return r;
+    }
+
+    int z() {
+        return -q - r;
+    }
+
+    public int distance(Axial other) {
+        return (Math.abs(this.x() - other.x()) + Math.abs(this.y() - other.y()) + Math.abs(this.z() - other.z())) / 2;
     }
 
 }

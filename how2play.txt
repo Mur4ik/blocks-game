@@ -1,0 +1,49 @@
+Camera:
+
+Move - Arrows
+
+Zoom - PageUp, PageDown
+
+
+
+HEXES
+
+    |       |
+    |       |
+    |       |
+   / \     / \
+  /   \   /   \
+ /     \ /     \
+|       |       |
+|       |       |
+|       |       |
+ \     / \     /
+  \   /   \   /
+   \ /     \ /
+    |       |
+    |       |
+    |       |
+
+
+Hex controls
+
+option A
+
+  W   E
+   \ /
+A - . - D
+   / \
+  Z   X
+
+option B
+   I
+U  |  O
+  >.<
+J  |  L
+   K
+
+(Space/Left mouse) to (de)select group on cursor
+
+Right mouse to draw
+
+

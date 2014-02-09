@@ -63,6 +63,10 @@ public class HexSet extends HashSet<Hex> {
         return intersection;
     }
 
+    Hex addHex(Axial axial) {
+        return addHex(axial.q, axial.r);
+    }
+
     Hex addHex(int q, int r) {
         Hex hex = new Hex();
         hex.size = 0.9f;

@@ -15,20 +15,26 @@ public class T {
 
     static Texture img;
     static Texture blocks0Texture;
+    static Texture hexes1Texture;
 
     static final Array<TextureRegion> blockTextureRegion = new Array<TextureRegion>();
 
     static Sprite[] blockSprites;
+    static Sprite[] hexSprites;
+    public static TextureRegion hexTexture1;
 
     public static void loadTextures() {
 
         img = new Texture("badlogic.jpg");
 
         blocks0Texture = new Texture(Gdx.files.internal("blocks0.png"));
+        hexes1Texture = new Texture(Gdx.files.internal("hexes1.png"));
 
         initBlockTextures(blocks0Texture);
 
         blockSprites = createBlockSprites();
+
+        hexTexture1 = new TextureRegion(hexes1Texture, 0, 0, 56, 64);
 
 
     }
