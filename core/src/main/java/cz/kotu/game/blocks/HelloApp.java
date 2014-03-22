@@ -5,11 +5,12 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import cz.kotu.game.blocks.hex.HexStage;
 
 
@@ -21,6 +22,7 @@ public class HelloApp extends ApplicationAdapter {
     BaseStage stage;
 
     private ShapeRenderer shapeRenderer;
+    private ExtendViewport mViewport;
 
     @Override
     public void create() {
@@ -28,6 +30,8 @@ public class HelloApp extends ApplicationAdapter {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 16, 12);
         camera.translate(-2, -2);
+
+        mViewport = new ExtendViewport(16, 12, camera);
 
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -51,11 +55,16 @@ public class HelloApp extends ApplicationAdapter {
 
     }
 
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        mViewport.update(width, height);
+    }
 
     @Override
     public void render() {
         Gdx.gl.glClearColor(1, 0, 0, 1);
-        Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         processInputs();
 
