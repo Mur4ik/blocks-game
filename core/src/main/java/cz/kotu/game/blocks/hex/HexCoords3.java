@@ -28,6 +28,10 @@ public class HexCoords3 {
 
     final Matrix4 projectionInverse = new Matrix4();
 
+    final Matrix4 projection2 = new Matrix4();
+
+    final Matrix4 projectionInverse2 = new Matrix4();
+
     /**
      * Virtual cube vectors - each cube coordinate (q, r, z) is the factor of its appropriate base vector.
      */
@@ -43,21 +47,61 @@ public class HexCoords3 {
         // imaginary z coordinate is used for inverse projection only
         x.z = y.z = z.z = H3;
 
-//        initializing projection matrix with its base vectors
-        projection.val[Matrix4.M00] = x.x;
-        projection.val[Matrix4.M10] = x.y;
-        projection.val[Matrix4.M20] = x.z;
+        initProjectionMatrices(projection, projectionInverse);
 
-        projection.val[Matrix4.M01] = y.x;
-        projection.val[Matrix4.M11] = y.y;
-        projection.val[Matrix4.M21] = y.z;
+        {
+            Vector3 x = new Vector3(1, 0f, 0);
+            Vector3 y = new Vector3(-0.5f, H, 0);
+//        z = new Vector3(-H, -0.5f, 0);
+            Vector3 z = new Vector3().sub(x).sub(y);
+            // imaginary z coordinate is used for inverse projection only
+            x.z = y.z = z.z = H3;
 
-        projection.val[Matrix4.M02] = z.x;
-        projection.val[Matrix4.M12] = z.y;
-        projection.val[Matrix4.M22] = z.z;
+            initProjectionMatrices(projection2, projectionInverse2);
+        }
+    }
 
-        projectionInverse.set(projection.val);
-        projectionInverse.inv();
+    private void initProjectionMatrices(Matrix4 projection1, Matrix4 projectionInverse1) {
+        //        initializing projection matrix with its base vectors
+        projection1.val[Matrix4.M00] = x.x;
+        projection1.val[Matrix4.M10] = x.y;
+        projection1.val[Matrix4.M20] = x.z;
+
+        projection1.val[Matrix4.M01] = y.x;
+        projection1.val[Matrix4.M11] = y.y;
+        projection1.val[Matrix4.M21] = y.z;
+
+        projection1.val[Matrix4.M02] = z.x;
+        projection1.val[Matrix4.M12] = z.y;
+        projection1.val[Matrix4.M22] = z.z;
+
+        projectionInverse1.set(projection1.val);
+        projectionInverse1.inv();
+    }
+
+    /**
+     * Distance between hex centers - number of hexes between two hexes (i.e. hex steps).
+     */
+    static float cubeDistance(Vector3 center, Vector3 cube) {
+        Vector3 dir = new Vector3(center).sub(cube);
+        dir = abs(dir);
+        return Math.max(Math.max(dir.x, dir.y), dir.z);
+//        return (dir.x + dir.y + dir.z) / 2f;
+    }
+
+    /**
+     * This distance is equal to 1 on border of hex with size 1.
+     */
+    static float hexDistance(Vector3 center, Vector3 cube) {
+
+//        project
+
+        Vector3 dir1 = new Vector3(center).sub(cube);
+        Vector3 dir = new Vector3(dir1.x - dir1.z, dir1.y - dir1.x, dir1.z - dir1.y);
+        dir = abs(dir);
+//        return Math.max(Math.max(dir.x, dir.y), dir.z);
+//        return Math.min(Math.min(dir.x, dir.y), dir.z);
+        return (dir.x + dir.y + dir.z) / 2f;
     }
 
     Vector3[] getHexVerts() {

@@ -74,6 +74,7 @@ public class HexStage extends BaseStage {
 //        }
 
         initLevel1();
+//        initLevelTest();
 
         {
             HexSet group = new HexSet();
@@ -142,7 +143,24 @@ public class HexStage extends BaseStage {
             group.remove(group.getHex(HexCoords3.toCube(new Axial(3, 2))));
             groups.add(group);
         }
+    }
 
+    private void initLevelTest() {
+        {
+            HexSet group = new HexSet();
+            group.color = Color.GREEN;
+            group.addHex(0, 0);
+            group.move(HexCoords3.toCube(new Axial(1, 1)));
+            groups.add(group);
+
+        }
+        {
+            HexSet group = new HexSet();
+            group.color = Color.BLUE;
+            group.addHex(0, 0);
+            group.move(HexCoords3.toCube(new Axial(0, 3)));
+            groups.add(group);
+        }
     }
 
     List<Axial> axialAreaInDistance(Axial center, int N) {
@@ -314,13 +332,23 @@ public class HexStage extends BaseStage {
             font.draw(batch, "q: " + decimalFormat.format(touch.x) +
                     " r: " + decimalFormat.format(touch.y) +
                     " z: " + decimalFormat.format(touch.z) +
-                    " s: " + decimalFormat.format(touch.x + touch.y + touch.z), 0, 10 * 16);
+                    " s: " + decimalFormat.format(touch.x + touch.y + touch.z) +
+                    " d: " + decimalFormat.format(HexCoords3.cubeDistance(new Vector3(), touch)) +
+                    " d2: " + decimalFormat.format(HexCoords3.hexDistance(new Vector3(), touch))
+                    , 0, 10 * 16);
+        }
+        {
+            font.draw(batch,
+                    " d: " + decimalFormat.format(HexCoords3.cubeDistance(new Vector3(), touch)) +
+                            " d2: " + decimalFormat.format(HexCoords3.hexDistance(new Vector3(), touch))
+                    , 0, 9 * 16
+            );
         }
         {
             font.draw(batch, "q: " + decimalFormat.format(cursor.center.x) +
                     " r: " + decimalFormat.format(cursor.center.y) +
                     " z: " + decimalFormat.format(cursor.center.z) +
-                    " s: " + decimalFormat.format(cursor.center.x + cursor.center.y + cursor.center.z), 0, 9 * 16);
+                    " s: " + decimalFormat.format(cursor.center.x + cursor.center.y + cursor.center.z), 0, 8 * 16);
         }
         batch.end();
 
@@ -383,6 +411,24 @@ public class HexStage extends BaseStage {
 
     }
 
+    Predicate<HexSet> intersectingHexSets(final Vector3 pickCube) {
+        return new Predicate<HexSet>() {
+            @Override
+            public boolean evaluate(HexSet group) {
+                return group.intersects(hexCoords3, pickCube);
+            }
+        };
+    }
+
+
+    private void pick(Vector3 cursorCube) {
+        for (HexSet group : new Predicate.PredicateIterable<HexSet>(groups, intersectingHexSets(cursorCube))) {
+            // toggle group is selected
+            if (!selectedGroups.remove(group)) {
+                selectedGroups.add(group);
+            }
+        }
+    }
 
     public void pointerDown(float x1, float y1) {
 //        final int q = MathUtils.floor(x1);
@@ -399,12 +445,19 @@ public class HexStage extends BaseStage {
      */
     final Map<Integer, Draggable> draggedMap = new HashMap<Integer, Draggable>();
 
+    final Map<Integer, Pointer> pointerMap = new HashMap<Integer, Pointer>();
+
     public boolean touchDown(float x, float y, int pointer, int button) {
         // unproject in cube coords
         Vector3 unproject = hexCoords3.unproject(x, y, new Vector3());
         // round keyboard cursor to mouse position
         cursor.center.set(unproject);
         HexCoords3.roundToHex(cursor.center);
+
+        Pointer pointerInfo = new Pointer();
+        pointerMap.put(pointer, pointerInfo);
+
+        pointerInfo.down(unproject);
 
         if (button == Input.Buttons.LEFT) {
             pick(unproject);
@@ -429,33 +482,31 @@ public class HexStage extends BaseStage {
         return true;
     }
 
-    private void pick(Vector3 cursorCube) {
-        for (HexSet group : groups) {
-            if (group.intersects(hexCoords3, cursorCube)) {
-                // toggle group is selected
-                if (!selectedGroups.remove(group)) {
-                    selectedGroups.add(group);
-                }
-            }
-        }
-    }
-
     public boolean touchDragged(float screenx, float screeny, int pointer) {
         hexCoords3.unproject(screenx, screeny, touch);
+
+        Pointer pointerInfo = pointerMap.get(pointer);
+
+        pointerInfo.dragged(touch);
 
         return false;
     }
 
-    public boolean touchUp(float x, float y, int pointer, int button) {
+    public boolean touchUp(float screenx, float screeny, int pointer, int button) {
         final Draggable draggable = draggedMap.get(pointer);
 
         if (draggable != null) {
-            if (draggable.onReleased(x, y)) {
+            if (draggable.onReleased(screenx, screeny)) {
                 draggedMap.remove(pointer);
             }
         }
 
-        Vector3 unproject = hexCoords3.unproject(x, y, new Vector3());
+        hexCoords3.unproject(screenx, screeny, touch);
+
+        Pointer pointerInfo = pointerMap.get(pointer);
+        pointerInfo.up(touch);
+
+        Vector3 unproject = hexCoords3.unproject(screenx, screeny, new Vector3());
         Axial axial = hexCoords3.roundToAxial(unproject);
         Object v = grid.get(axial);
         int val = 0;
@@ -465,6 +516,45 @@ public class HexStage extends BaseStage {
         grid.set(axial, val + 1);
 
         return true;
+    }
+
+    public class Pointer {
+
+        Vector3 startCube;
+
+        Set<HexSet> sets = new HashSet<HexSet>();
+
+        public void down(Vector3 touchCube) {
+            startCube = touchCube;
+            for (HexSet group : new Predicate.PredicateIterable<HexSet>(groups, intersectingHexSets(touchCube))) {
+                sets.add(group);
+            }
+        }
+
+        public void dragged(Vector3 touchCube) {
+            Vector3 diff = new Vector3(touchCube);
+
+            diff.sub(startCube);
+
+            if (moveWithPhysics(sets, diff)) {
+                startCube.set(touchCube);
+            }
+        }
+
+        public void up(Vector3 touchCube) {
+
+            for (HexSet set : sets) {
+                for (Hex hex : set) {
+                    hexCoords3.roundToHex(hex.center);
+                }
+
+            }
+
+
+            sets.clear();
+        }
+
+
     }
 
     @Override
@@ -541,23 +631,31 @@ public class HexStage extends BaseStage {
 //        Axial dir1 = hexCoords3.roundToAxial(vector1);
 //        Axial dir2 = hexCoords3.roundToAxial(vector2);
 
-        for (HexSet selectedGroup : selectedGroups) {
-            selectedGroup.move(vector1);
-            selectedGroup.move(vector2);
+        moveWithPhysics(selectedGroups, new Vector3(vector1).add(vector2));
+
+        return super.keyTyped(character);
+    }
+
+    /**
+     * @return true iff move was successful
+     */
+    private boolean moveWithPhysics(Collection<HexSet> moveGroups, Vector3 vector) {
+        for (HexSet moveGroup : moveGroups) {
+            moveGroup.move(vector);
         }
 
         boolean rollback = false;
-        for (HexSet selectedGroup : selectedGroups) {
+        for (HexSet moveGroup : moveGroups) {
             for (HexSet group : groups) {
-                if (group == selectedGroup) {
+                if (group == moveGroup) {
                     // skip checking self
                     continue;
                 }
-                if (selectedGroups.contains(group)) {
-                    // skip all selected group - they move together
+                if (moveGroups.contains(group)) {
+                    // skip all moving group - they move together
                     continue;
                 }
-                if (selectedGroup.intersects(group)) {
+                if (moveGroup.intersects(group)) {
                     // rollback
                     rollback = true;
                 }
@@ -565,15 +663,12 @@ public class HexStage extends BaseStage {
         }
 
         if (rollback) {
-            vector1.scl(-1);
-            vector2.scl(-1);
-            for (HexSet selectedGroup : selectedGroups) {
-                selectedGroup.move(vector1);
-                selectedGroup.move(vector2);
+            for (HexSet moveGroup : moveGroups) {
+                moveGroup.move(vector.scl(-1));
             }
         }
 
-        return super.keyTyped(character);
+        return !rollback;
     }
 
 }

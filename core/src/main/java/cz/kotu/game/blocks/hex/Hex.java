@@ -18,15 +18,12 @@ public class Hex {
     }
 
     float centerDistance(Vector3 cube) {
-        Vector3 dir = new Vector3(this.center).sub(cube);
-        dir = HexCoords3.abs(dir);
-//        return Math.max(Math.max(dir.x, dir.y), dir.z);
-        return (dir.x + dir.y + dir.z) / 2f;
+        return HexCoords3.hexDistance(this.center, cube);
     }
 
     boolean intersects(Hex other) {
         // from how the size is currently calculated - need to scale
-        return this.centerDistance(other) <= (this.size + other.size) / 2f;
+        return this.centerDistance(other) <= (this.size + other.size);
     }
 
     void draw(SpriteBatch batch) {
